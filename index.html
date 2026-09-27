@@ -9,23 +9,23 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+<body id="app-body" class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
 
   <!-- Header Superior -->
-  <header class="bg-indigo-900 text-white shadow-md py-3.5 px-6 flex justify-between items-center sticky top-0 z-50">
+  <header id="app-header" class="bg-indigo-900 text-white shadow-md py-3.5 px-6 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300">
     <div class="flex items-center gap-3">
-      <div class="bg-indigo-700 p-2 rounded-lg text-indigo-200">
+      <div id="app-logo-bg" class="bg-indigo-700 p-2 rounded-lg text-indigo-200 transition-colors">
         <i data-lucide="graduation-cap" class="w-6 h-6"></i>
       </div>
       <div>
         <span class="text-xl font-bold tracking-wide block leading-none">Campus Virtual EVA</span>
-        <span class="text-xs text-indigo-300">Plataforma de Aprendizaje y Gestión Académica</span>
+        <span id="app-header-sub" class="text-xs text-indigo-300">Plataforma de Aprendizaje y Gestión Académica</span>
       </div>
     </div>
     
     <!-- Selector de Rol -->
     <div class="flex items-center gap-4 text-sm font-medium">
-      <div class="bg-indigo-800/80 p-1 rounded-lg border border-indigo-700 flex text-xs">
+      <div id="role-selector-container" class="bg-indigo-800/80 p-1 rounded-lg border border-indigo-700 flex text-xs">
         <button id="btn-role-student" onclick="switchRole('estudiante')" class="px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow">
           Vista Estudiante
         </button>
@@ -33,7 +33,7 @@
           <i data-lucide="lock" class="w-3 h-3"></i> Vista Docente
         </button>
       </div>
-      <div class="hidden md:flex items-center gap-2 border-l border-indigo-700 pl-4">
+      <div id="user-avatar-container" class="hidden md:flex items-center gap-2 border-l border-indigo-700 pl-4">
         <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs" id="user-avatar">
           E
         </div>
@@ -47,10 +47,10 @@
     <!-- Carga dinámica -->
   </main>
 
-  <!-- Modal para Visor de PDF -->
+  <!-- Modal Visor de PDF -->
   <div id="pdf-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex-col justify-center items-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-300">
-      <div class="bg-indigo-900 text-white px-5 py-3 flex justify-between items-center">
+      <div id="pdf-modal-header" class="bg-indigo-900 text-white px-5 py-3 flex justify-between items-center transition-colors">
         <div class="flex items-center gap-2">
           <i data-lucide="file-text" class="w-5 h-5 text-indigo-300"></i>
           <div>
@@ -58,7 +58,7 @@
             <span id="pdf-modal-subtitle" class="text-xs text-indigo-200">Revisión de Tarea del Estudiante</span>
           </div>
         </div>
-        <button onclick="closePdfModal()" class="text-indigo-200 hover:text-white hover:bg-indigo-800 p-1.5 rounded-lg transition-colors">
+        <button onclick="closePdfModal()" class="text-indigo-200 hover:text-white p-1.5 rounded-lg transition-colors">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -77,6 +77,54 @@
   </div>
 
   <script>
+    // Canal de sincronización en tiempo real para múltiples pestañas/dispositivos
+    const syncChannel = new BroadcastChannel('eva_sync_channel');
+
+    // Paletas de Color Configurables
+    const themePalettes = {
+      indigo: {
+        headerBg: 'bg-indigo-900',
+        headerSub: 'text-indigo-300',
+        logoBg: 'bg-indigo-700',
+        accentBg: 'bg-indigo-600',
+        accentHover: 'hover:bg-indigo-700',
+        accentText: 'text-indigo-600',
+        accentLightBg: 'bg-indigo-50',
+        borderAccent: 'border-indigo-200'
+      },
+      emerald: {
+        headerBg: 'bg-emerald-900',
+        headerSub: 'text-emerald-300',
+        logoBg: 'bg-emerald-700',
+        accentBg: 'bg-emerald-600',
+        accentHover: 'hover:bg-emerald-700',
+        accentText: 'text-emerald-600',
+        accentLightBg: 'bg-emerald-50',
+        borderAccent: 'border-emerald-200'
+      },
+      violet: {
+        headerBg: 'bg-violet-900',
+        headerSub: 'text-violet-300',
+        logoBg: 'bg-violet-700',
+        accentBg: 'bg-violet-600',
+        accentHover: 'hover:bg-violet-700',
+        accentText: 'text-violet-600',
+        accentLightBg: 'bg-violet-50',
+        borderAccent: 'border-violet-200'
+      },
+      cobalt: {
+        headerBg: 'bg-slate-900',
+        headerSub: 'text-cyan-400',
+        logoBg: 'bg-cyan-700',
+        accentBg: 'bg-cyan-600',
+        accentHover: 'hover:bg-cyan-700',
+        accentText: 'text-cyan-600',
+        accentLightBg: 'bg-cyan-50',
+        borderAccent: 'border-cyan-200'
+      }
+    };
+
+    let currentTheme = localStorage.getItem('eva_theme_color') || 'indigo';
     let currentRole = 'estudiante'; 
     let adminPassword = localStorage.getItem('eva_admin_password') || "Luis0316"; 
     
@@ -106,12 +154,9 @@
 
     const defaultEntregas = [
       { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', archivoData: '', fecha: '2026-09-25 14:30', nota: 10.00 },
-      { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', archivoData: '', fecha: '2026-09-25 10:15', nota: 9.50 },
-      { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', archivoData: '', fecha: '2026-09-26 08:20', nota: 8.50 },
-      { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', archivoData: '', fecha: '2026-09-26 11:00', nota: 9.00 }
+      { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', archivoData: '', fecha: '2026-09-25 10:15', nota: 9.50 }
     ];
 
-    // Cargar datos desde localStorage
     let db = {
       cursos: JSON.parse(localStorage.getItem('eva_cursos')) || defaultCursos,
       actividades: JSON.parse(localStorage.getItem('eva_actividades')) || defaultActividades,
@@ -123,17 +168,60 @@
         localStorage.setItem('eva_cursos', JSON.stringify(db.cursos));
         localStorage.setItem('eva_actividades', JSON.stringify(db.actividades));
         localStorage.setItem('eva_entregas', JSON.stringify(db.entregas));
+        localStorage.setItem('eva_admin_password', adminPassword);
+        localStorage.setItem('eva_theme_color', currentTheme);
+
+        // Notificar cambios a otros navegadores o pestañas abiertas
+        syncChannel.postMessage({ type: 'SYNC_UPDATE', password: adminPassword, theme: currentTheme, db: db });
       } catch (e) {
-        console.warn("Storage quota limit reached, keeping items in active session memory.");
+        console.warn("Storage limit reached.");
       }
+    }
+
+    // Escuchar actualizaciones de otros equipos/pestañas
+    syncChannel.onmessage = (event) => {
+      if (event.data && event.data.type === 'SYNC_UPDATE') {
+        if (event.data.password) adminPassword = event.data.password;
+        if (event.data.theme) {
+          currentTheme = event.data.theme;
+          applyTheme(currentTheme);
+        }
+        if (event.data.db) db = event.data.db;
+        
+        if (currentRole === 'docente') renderDocenteView();
+        else renderEstudianteView();
+        lucide.createIcons();
+      }
+    };
+
+    function applyTheme(themeKey) {
+      currentTheme = themeKey;
+      const palette = themePalettes[themeKey] || themePalettes.indigo;
+      
+      const header = document.getElementById('app-header');
+      const headerSub = document.getElementById('app-header-sub');
+      const logoBg = document.getElementById('app-logo-bg');
+      const pdfHeader = document.getElementById('pdf-modal-header');
+
+      header.className = `${palette.headerBg} text-white shadow-md py-3.5 px-6 flex justify-between items-center sticky top-0 z-50 transition-colors duration-300`;
+      headerSub.className = `text-xs ${palette.headerSub}`;
+      logoBg.className = `${palette.logoBg} p-2 rounded-lg text-indigo-200 transition-colors`;
+      pdfHeader.className = `${palette.headerBg} text-white px-5 py-3 flex justify-between items-center transition-colors`;
+
+      localStorage.setItem('eva_theme_color', themeKey);
     }
 
     function switchRole(role) {
       if (role === 'docente') {
+        // Verificar contraseña sincronizada
         const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
         if (passInput === null) return;
-        if (passInput !== adminPassword) {
-          alert("Contraseña incorrecta. Acceso denegado.");
+        
+        // Obtención directa del almacenamiento actualizado
+        const latestSavedPass = localStorage.getItem('eva_admin_password') || adminPassword;
+
+        if (passInput.trim() !== latestSavedPass.trim()) {
+          alert("❌ Contraseña incorrecta. Acceso denegado.");
           return;
         }
       }
@@ -144,14 +232,16 @@
       const avatar = document.getElementById('user-avatar');
       const name = document.getElementById('user-name-display');
 
+      const palette = themePalettes[currentTheme] || themePalettes.indigo;
+
       if (role === 'estudiante') {
-        btnStudent.className = "px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow";
+        btnStudent.className = `px-3 py-1.5 rounded-md font-semibold transition-all ${palette.accentBg} text-white shadow`;
         btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white flex items-center gap-1";
         avatar.innerText = "E";
         name.innerText = "Estudiante";
         renderEstudianteView();
       } else {
-        btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow flex items-center gap-1";
+        btnTeacher.className = `px-3 py-1.5 rounded-md font-semibold transition-all ${palette.accentBg} text-white shadow flex items-center gap-1`;
         btnStudent.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white";
         avatar.innerText = "D";
         name.innerText = "Docente Administrador";
@@ -161,9 +251,11 @@
     }
 
     function changeAdminPassword() {
+      const currentPassStored = localStorage.getItem('eva_admin_password') || adminPassword;
       const actual = prompt("Seguridad Docente:\n\nIngresa la contraseña ACTUAL del docente:");
+      
       if (actual === null) return;
-      if (actual !== adminPassword) {
+      if (actual.trim() !== currentPassStored.trim()) {
         alert("❌ La contraseña actual ingresada es incorrecta.");
         return;
       }
@@ -177,8 +269,8 @@
       const confirmacion = prompt("Confirma la NUEVA contraseña:");
       if (nueva.trim() === confirmacion.trim()) {
         adminPassword = nueva.trim();
-        localStorage.setItem('eva_admin_password', adminPassword);
-        alert("¡Contraseña del docente actualizada con éxito!");
+        saveData(); // Guarda localmente y transmite la sincronización
+        alert("¡Contraseña del docente actualizada con éxito en todos los dispositivos!");
       } else {
         alert("❌ Las contraseñas no coinciden. No se realizaron cambios.");
       }
@@ -186,20 +278,18 @@
 
     function accessCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
-      
       if (currentRole === 'docente') {
         openCourse(cursoId);
         return;
       }
 
       const userKey = prompt(`🔒 CURSO CON ACCESO RESTRINGIDO\n\nAsignatura: ${curso.nombre} (${curso.nivel})\n\nPor favor, ingresa la clave del curso proporcionada por tu docente:`);
-
       if (userKey === null) return;
 
       if (userKey.trim() === curso.clave) {
         openCourse(cursoId);
       } else {
-        alert("❌ Clave incorrecta. No tienes permiso para acceder a este curso o enviar deberes en él.");
+        alert("❌ Clave incorrecta. No tienes permiso para acceder a este curso.");
       }
     }
 
@@ -207,13 +297,15 @@
     // VISTA ESTUDIANTE
     // ----------------------------------------------------
     function renderEstudianteView() {
+      const palette = themePalettes[currentTheme] || themePalettes.indigo;
+
       const cursosCards = db.cursos.map(c => `
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all flex flex-col">
-          <div class="bg-indigo-600 h-2"></div>
+          <div class="${palette.accentBg} h-2"></div>
           <div class="p-5 flex-1 flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start mb-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">${c.asignatura}</span>
+                <span class="text-xs font-bold uppercase tracking-wider ${palette.accentText} ${palette.accentLightBg} px-2.5 py-1 rounded-md">${c.asignatura}</span>
                 <span class="text-xs font-semibold text-slate-400">${c.nivel}</span>
               </div>
               <h3 class="text-base font-bold text-slate-900 mt-1">${c.nombre}</h3>
@@ -224,7 +316,7 @@
               <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
                 <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-500"></i> Protegido
               </span>
-              <button onclick="accessCourse('${c.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+              <button onclick="accessCourse('${c.id}')" class="${palette.accentBg} ${palette.accentHover} text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
                 <i data-lucide="key" class="w-3.5 h-3.5"></i> Ingresar al Curso
               </button>
             </div>
@@ -238,8 +330,8 @@
             <h1 class="text-2xl font-bold text-slate-900">Catálogo de Cursos y Asignaturas</h1>
             <p class="text-slate-500 text-sm">Selecciona tu materia e ingresa tu clave para enviar tus deberes en formato PDF.</p>
           </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start">
-            <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i> Acceso Seguro Activo
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${palette.accentLightBg} ${palette.accentText} border ${palette.borderAccent} self-start">
+            <i data-lucide="shield-check" class="w-4 h-4"></i> Acceso Seguro Activo
           </span>
         </div>
 
@@ -253,6 +345,7 @@
     // DENTRO DEL CURSO DESBLOQUEADO
     // ----------------------------------------------------
     function openCourse(cursoId) {
+      const palette = themePalettes[currentTheme] || themePalettes.indigo;
       const curso = db.cursos.find(c => c.id === cursoId);
       const acts = db.actividades.filter(a => a.cursoId === cursoId);
 
@@ -262,8 +355,8 @@
         const estaVencida = a.fechaLimite && a.fechaLimite < hoy;
 
         return `
-          <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-5 flex flex-col gap-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100/80 pb-3">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
               <div>
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
                   <span class="text-xs font-bold px-2.5 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
@@ -276,7 +369,7 @@
                   ` : ''}
                   ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
                 </div>
-                <h4 class="font-bold text-indigo-950 text-base">${a.titulo}</h4>
+                <h4 class="font-bold text-slate-900 text-base">${a.titulo}</h4>
                 <p class="text-xs text-slate-600 mt-0.5">${a.detalle}</p>
               </div>
 
@@ -288,11 +381,10 @@
             </div>
 
             ${a.tipo === 'Tarea' ? `
-              <!-- Formulario de Subida PDF -->
-              <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm">
+              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                    <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-600"></i> Entrega de Tarea (Formato PDF)
+                  <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 ${palette.accentText}"></i> Entrega de Tarea (Formato PDF)
                   </span>
                   <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">Curso Verificado</span>
                 </div>
@@ -305,10 +397,10 @@
 
                   <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Seleccionar Documento PDF:</label>
-                    <div class="relative border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/30 rounded-lg p-3 text-center transition-colors">
+                    <div class="relative border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50/50 rounded-lg p-3 text-center transition-colors">
                       <input type="file" id="student-file-${a.id}" accept=".pdf" required onchange="handleFileSelect('${a.id}')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                       <div class="flex flex-col items-center justify-center gap-1">
-                        <i data-lucide="file-up" class="w-6 h-6 text-indigo-500"></i>
+                        <i data-lucide="file-up" class="w-6 h-6 ${palette.accentText}"></i>
                         <span id="file-label-${a.id}" class="text-xs font-medium text-slate-600">Haz clic aquí para adjuntar tu archivo PDF</span>
                       </div>
                     </div>
@@ -319,7 +411,6 @@
                   </button>
                 </form>
 
-                <!-- Tareas ya enviadas en la actividad -->
                 ${entregasActividad.length > 0 ? `
                   <div class="mt-4 pt-3 border-t border-slate-100">
                     <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Entregas enviadas en este curso:</span>
@@ -352,49 +443,15 @@
         `;
       }).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o evaluaciones asignadas en este momento.</p>';
 
-      const teacherControls = currentRole === 'docente' ? `
-        <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 mb-6">
-          <h3 class="font-bold text-amber-900 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wide">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600"></i> Publicar Nueva Tarea o Prueba en este Curso
-          </h3>
-          <form onsubmit="addActivity(event, '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Tipo</label>
-              <select id="new-act-type" class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
-                <option value="Tarea">Tarea (Requiere PDF)</option>
-                <option value="Prueba">Prueba / Examen</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Título de la Actividad</label>
-              <input type="text" id="new-act-title" placeholder="Ej: Deber 2: Mecanismos Serie" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Instrucciones</label>
-              <input type="text" id="new-act-detail" placeholder="Ej: Subir reporte en formato PDF" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Fecha Límite</label>
-              <input type="date" id="new-act-date" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
-            </div>
-            <div class="flex items-end">
-              <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
-                <i data-lucide="save" class="w-3.5 h-3.5"></i> Publicar
-              </button>
-            </div>
-          </form>
-        </div>
-      ` : '';
-
       document.getElementById('main-content').innerHTML = `
-        <button onclick="${currentRole === 'docente' ? 'renderDocenteView()' : 'renderEstudianteView()'}; lucide.createIcons();" class="mb-4 flex items-center gap-1.5 text-xs text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+        <button onclick="${currentRole === 'docente' ? 'renderDocenteView()' : 'renderEstudianteView()'}; lucide.createIcons();" class="mb-4 flex items-center gap-1.5 text-xs ${palette.accentText} font-semibold hover:underline transition-colors">
           <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del curso y volver al catálogo
         </button>
 
         <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
           <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-start">
             <div>
-              <span class="text-xs font-bold uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">${curso.asignatura}</span>
+              <span class="text-xs font-bold uppercase ${palette.accentText} ${palette.accentLightBg} px-2.5 py-1 rounded-md">${curso.asignatura}</span>
               <h2 class="text-2xl font-bold text-slate-900 mt-2">${curso.nombre}</h2>
               <p class="text-slate-500 text-sm">${curso.nivel}</p>
             </div>
@@ -403,11 +460,9 @@
             </span>
           </div>
 
-          ${teacherControls}
-
           <div>
             <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-              <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i> Tareas y Evaluaciones de este Curso
+              <i data-lucide="file-text" class="w-4 h-4 ${palette.accentText}"></i> Tareas y Evaluaciones de este Curso
             </h3>
             <div class="space-y-4">
               ${actsHTML}
@@ -418,22 +473,18 @@
       lucide.createIcons();
     }
 
-    // Funciones para previsualizar PDF, aplazar fecha y eliminar entregas
     function previewPDF(entregaId) {
       const entrega = db.entregas.find(e => e.id === entregaId);
       if (!entrega) return;
 
       const act = db.actividades.find(a => a.id === entrega.actividadId);
-      
       document.getElementById('pdf-modal-title').innerText = entrega.archivoNombre;
       document.getElementById('pdf-modal-subtitle').innerText = `Estudiante: ${entrega.estudiante} | Tarea: ${act ? act.titulo : 'Asignación'}`;
 
       const iframe = document.getElementById('pdf-frame');
-
       if (entrega.archivoData && entrega.archivoData.startsWith('data:application/pdf')) {
         iframe.src = entrega.archivoData;
       } else {
-        // PDF de demostración generado dinámicamente en Data URL
         const samplePDFData = "data:application/pdf;base64,JVBERi0xLjQKJSDi48/GCjEgMCBvYmoKPDwvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlIC9QYWdlcyAvQ291bnQgMSAvS2lkcyBbMyAwIFJdPj4KZW5kb2JqCjMgMCBvYmoKPDwvVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9SZXNvdXJjZXMgPDwvRm9udCA8PC9GMSA0IDAgUj4+Pj4gL01lZGlhQm94IFswIDAgNjEyIDc5Ml0gL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2E+PgplbmRvYmoKNSAwIG9iago8PC9MZW5ndGggOTk+PgpzdHJlYW0KQlQKL0YxIDI0IFRmCjcwIDcwMCBUZAooREVCRVIgRU5UUkVHQURPIEVOIEZPUk1BVE8gUERGKSBUagovRjEgMTIgVGYKMCAtNDAgVGQKKEVzdHVkaWFudGU6IC" + btoa(unescape(encodeURIComponent(entrega.estudiante))) + ") " + "VGoKMCAtMjAgVGQKKEFyY2hpdm86IC" + btoa(unescape(encodeURIComponent(entrega.archivoNombre))) + ") " + "VGoKMCAtMjAgVGQKKEZlY2hhOiAi" + btoa(unescape(encodeURIComponent(entrega.fecha))) + ") " + "VGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwDY2Nzc2Y24gCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAyNDIgMDAwMDAgbiAKMDAwMDAwMDI5NCAwMDAwMCBuIAp0cmFpbGVyCjw8L1NpemUgNiAvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0NDMKJSVFT0Y=";
         iframe.src = samplePDFData;
       }
@@ -463,10 +514,10 @@
 
     function deleteSubmission(entregaId, cursoId = null) {
       const entrega = db.entregas.find(e => e.id === entregaId);
-      if (confirm(`¿Estás seguro de eliminar el deber entregado por "${entrega.estudiante}" (${entrega.archivoNombre})?`)) {
+      if (confirm(`¿Estás seguro de eliminar el deber entregado por "${entrega.estudiante}"?`)) {
         db.entregas = db.entregas.filter(e => e.id !== entregaId);
         saveData();
-        alert("Deber eliminado correctamente de la plataforma.");
+        alert("Deber eliminado correctamente.");
         if (cursoId) {
           openCourse(cursoId);
         } else {
@@ -524,44 +575,20 @@
         openCourse(cursoId);
       };
 
-      reader.onerror = function() {
-        alert("Error al leer el archivo. Inténtalo de nuevo.");
-      };
-
       reader.readAsDataURL(file);
     }
 
-    function addActivity(event, cursoId) {
-      event.preventDefault();
-      const type = document.getElementById('new-act-type').value;
-      const title = document.getElementById('new-act-title').value.trim();
-      const detail = document.getElementById('new-act-detail').value.trim();
-      const date = document.getElementById('new-act-date').value;
-
-      db.actividades.push({
-        id: 'act_' + Date.now(),
-        cursoId: cursoId,
-        tipo: type,
-        titulo: title,
-        detalle: detail,
-        fechaLimite: date,
-        tiempo: type === 'Prueba' ? 30 : 0
-      });
-
-      saveData();
-      alert(`¡${type} publicada en el curso!`);
-      openCourse(cursoId);
-    }
-
     // ----------------------------------------------------
-    // VISTA DOCENTE Y CENTRO DE RECEPCIÓN PDF CLASIFICADO
+    // VISTA DOCENTE Y PANEL DE PERSONALIZACIÓN
     // ----------------------------------------------------
     function renderDocenteView() {
+      const palette = themePalettes[currentTheme] || themePalettes.indigo;
+
       const cursosTableRows = db.cursos.map(c => `
         <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
           <td class="py-2.5 px-3 font-bold text-slate-900">${c.nombre}</td>
           <td class="py-2.5 px-3 text-slate-600">${c.nivel}</td>
-          <td class="py-2.5 px-3 font-semibold text-indigo-600">${c.asignatura}</td>
+          <td class="py-2.5 px-3 font-semibold ${palette.accentText}">${c.asignatura}</td>
           <td class="py-2.5 px-3">
             <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
               <i data-lucide="key" class="w-3 h-3 text-amber-600"></i> ${c.clave}
@@ -594,14 +621,14 @@
             return `
               <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                 <td class="py-2.5 px-4 font-bold text-slate-900 flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black">
+                  <div class="w-6 h-6 rounded-full ${palette.accentLightBg} ${palette.accentText} flex items-center justify-center text-[10px] font-black">
                     ${e.estudiante.charAt(0)}
                   </div>
                   ${e.estudiante}
                 </td>
                 <td class="py-2.5 px-4 text-slate-700 font-medium">${act ? act.titulo : 'Tarea'}</td>
                 <td class="py-2.5 px-4">
-                  <button onclick="previewPDF('${e.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-100 transition-colors cursor-pointer" title="Hacer clic para ver el PDF">
+                  <button onclick="previewPDF('${e.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-100 transition-colors cursor-pointer">
                     <i data-lucide="eye" class="w-3.5 h-3.5 text-rose-600"></i> Ver PDF: ${e.archivoNombre}
                   </button>
                 </td>
@@ -612,7 +639,7 @@
                   </button>
                 </td>
                 <td class="py-2.5 px-4 text-center">
-                  <button onclick="deleteSubmission('${e.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 p-1.5 rounded-lg transition-colors inline-flex items-center gap-1 font-semibold" title="Borrar Deber">
+                  <button onclick="deleteSubmission('${e.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 p-1.5 rounded-lg transition-colors inline-flex items-center gap-1 font-semibold">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Borrar
                   </button>
                 </td>
@@ -622,23 +649,23 @@
 
           entregasClasificadasHTML += `
             <div class="mb-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <div class="bg-indigo-900 text-white px-4 py-3 flex justify-between items-center">
+              <div class="${palette.headerBg} text-white px-4 py-3 flex justify-between items-center transition-colors">
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold bg-indigo-700 text-indigo-200 px-2.5 py-0.5 rounded-md uppercase tracking-wider">${curso.asignatura}</span>
-                  <h3 class="font-bold text-sm">${curso.nombre} - <span class="text-indigo-300 font-normal">${curso.nivel}</span></h3>
+                  <span class="text-xs font-bold ${palette.logoBg} text-indigo-100 px-2.5 py-0.5 rounded-md uppercase tracking-wider">${curso.asignatura}</span>
+                  <h3 class="font-bold text-sm">${curso.nombre} - <span class="text-indigo-200 font-normal">${curso.nivel}</span></h3>
                 </div>
-                <span class="text-xs bg-indigo-800 text-indigo-200 px-2.5 py-1 rounded-full font-semibold">
-                  ${entregasCurso.length} Tareas Recibidas (Orden Alfabético A-Z)
+                <span class="text-xs bg-black/20 text-white px-2.5 py-1 rounded-full font-semibold">
+                  ${entregasCurso.length} Tareas Recibidas (A-Z)
                 </span>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr class="bg-slate-100/80 text-slate-600 uppercase text-[10px] font-bold">
-                      <th class="py-2.5 px-4">Estudiante (Nombre y Apellido)</th>
+                      <th class="py-2.5 px-4">Estudiante</th>
                       <th class="py-2.5 px-4">Tarea Asignada</th>
                       <th class="py-2.5 px-4">Previsualizar Documento PDF</th>
-                      <th class="py-2.5 px-4">Fecha de Envío</th>
+                      <th class="py-2.5 px-4">Fecha</th>
                       <th class="py-2.5 px-4">Calificación</th>
                       <th class="py-2.5 px-4 text-center">Acción</th>
                     </tr>
@@ -666,11 +693,11 @@
         <div class="mb-6 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Panel Docente Administrador</h1>
-            <p class="text-slate-500 text-sm">Gestión de oferta académica y centro de recepción de tareas en formato PDF.</p>
+            <p class="text-slate-500 text-sm">Gestión académica, personalización de entorno y tareas recibidas.</p>
           </div>
           <div class="flex items-center gap-2 self-start">
             <button onclick="changeAdminPassword()" class="bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-100 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-              <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i> Cambiar Clave Administrador
+              <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i> Cambiar Clave
             </button>
             <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5">
               <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
@@ -678,30 +705,60 @@
           </div>
         </div>
 
+        <!-- MÓDULO DE PERSONALIZACIÓN Y ACTUALIZACIONES DE DISEÑO -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8">
+          <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+            <i data-lucide="palette" class="w-4 h-4 ${palette.accentText}"></i> Personalización de Apariencia del Sistema
+          </h2>
+          <p class="text-xs text-slate-500 mb-4">Selecciona un tema de color para adaptar la plataforma a tus preferencias institucionales:</p>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button onclick="applyTheme('indigo'); renderDocenteView(); lucide.createIcons();" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'indigo' ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-500/20' : 'border-slate-200 hover:bg-slate-50'}">
+              <span class="w-4 h-4 rounded-full bg-indigo-900 inline-block"></span>
+              <span class="text-xs font-bold text-slate-800">Azul Índigo</span>
+            </button>
+
+            <button onclick="applyTheme('emerald'); renderDocenteView(); lucide.createIcons();" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'emerald' ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-500/20' : 'border-slate-200 hover:bg-slate-50'}">
+              <span class="w-4 h-4 rounded-full bg-emerald-900 inline-block"></span>
+              <span class="text-xs font-bold text-slate-800">Verde Esmeralda</span>
+            </button>
+
+            <button onclick="applyTheme('violet'); renderDocenteView(); lucide.createIcons();" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'violet' ? 'border-violet-600 bg-violet-50 ring-2 ring-violet-500/20' : 'border-slate-200 hover:bg-slate-50'}">
+              <span class="w-4 h-4 rounded-full bg-violet-900 inline-block"></span>
+              <span class="text-xs font-bold text-slate-800">Púrpura Violeta</span>
+            </button>
+
+            <button onclick="applyTheme('cobalt'); renderDocenteView(); lucide.createIcons();" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'cobalt' ? 'border-cyan-600 bg-cyan-50 ring-2 ring-cyan-500/20' : 'border-slate-200 hover:bg-slate-50'}">
+              <span class="w-4 h-4 rounded-full bg-slate-900 inline-block"></span>
+              <span class="text-xs font-bold text-slate-800">Gris Cobalto</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Módulo de Creación de Cursos -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8">
           <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i> Registrar Nuevo Curso / Asignatura
+            <i data-lucide="plus-circle" class="w-4 h-4 ${palette.accentText}"></i> Registrar Nuevo Curso / Asignatura
           </h2>
           <form onsubmit="addNewCourse(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Curso</label>
-              <input type="text" id="new-course-name" placeholder="Ej: Robótica Educativa" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="new-course-name" placeholder="Ej: Robótica Educativa" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Asignatura</label>
-              <input type="text" id="new-course-subject" placeholder="Ej: Robótica" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="new-course-subject" placeholder="Ej: Robótica" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nivel / Subnivel / Año</label>
-              <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Matriculación</label>
-              <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
             </div>
             <div class="flex items-end">
-              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
+              <button type="submit" class="w-full ${palette.accentBg} ${palette.accentHover} text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
                 <i data-lucide="save" class="w-4 h-4"></i> Guardar Curso
               </button>
             </div>
@@ -712,7 +769,7 @@
         <div class="mb-8">
           <div class="mb-4 flex items-center justify-between">
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="folder-archive" class="w-5 h-5 text-indigo-600"></i> Centro de Recepción PDF Clasificado (Curso, Año y A-Z)
+              <i data-lucide="folder-archive" class="w-5 h-5 ${palette.accentText}"></i> Centro de Recepción PDF Clasificado (Curso, Año y A-Z)
             </h2>
           </div>
           ${entregasClasificadasHTML}
@@ -722,7 +779,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i> Catálogo de Asignaturas y Claves (${db.cursos.length})
+              <i data-lucide="layout-grid" class="w-4 h-4 ${palette.accentText}"></i> Catálogo de Asignaturas y Claves (${db.cursos.length})
             </h2>
           </div>
           <div class="overflow-x-auto">
@@ -802,6 +859,7 @@
     }
 
     window.onload = () => {
+      applyTheme(currentTheme);
       renderEstudianteView();
       lucide.createIcons();
     };
