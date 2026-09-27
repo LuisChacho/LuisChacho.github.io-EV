@@ -119,9 +119,13 @@
     };
 
     function saveData() {
-      localStorage.setItem('eva_cursos', JSON.stringify(db.cursos));
-      localStorage.setItem('eva_actividades', JSON.stringify(db.actividades));
-      localStorage.setItem('eva_entregas', JSON.stringify(db.entregas));
+      try {
+        localStorage.setItem('eva_cursos', JSON.stringify(db.cursos));
+        localStorage.setItem('eva_actividades', JSON.stringify(db.actividades));
+        localStorage.setItem('eva_entregas', JSON.stringify(db.entregas));
+      } catch (e) {
+        console.warn("Storage quota limit reached, keeping items in active session memory.");
+      }
     }
 
     function switchRole(role) {
@@ -483,19 +487,26 @@
 
     function submitHomework(event, actId, cursoId) {
       event.preventDefault();
-      const studentName = document.getElementById(`student-name-${actId}`).value.trim();
+      
+      const studentInput = document.getElementById(`student-name-${actId}`);
       const fileInput = document.getElementById(`student-file-${actId}`);
 
-      if (!fileInput.files || fileInput.files.length === 0) {
+      if (!studentInput || !studentInput.value.trim()) {
+        alert("Por favor ingresa los Apellidos y Nombres del Estudiante.");
+        return;
+      }
+
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         alert("Por favor selecciona un archivo PDF.");
         return;
       }
 
+      const studentName = studentInput.value.trim();
       const file = fileInput.files[0];
       const reader = new FileReader();
 
       reader.onload = function(e) {
-        db.entregas.push({
+        const nuevaEntrega = {
           id: 'ent_' + Date.now(),
           actividadId: actId,
           cursoId: cursoId,
@@ -504,11 +515,17 @@
           archivoData: e.target.result,
           fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
           nota: 0.00
-        });
+        };
 
+        db.entregas.push(nuevaEntrega);
         saveData();
-        alert(`¡Éxito! Tarea de "${studentName}" registrada en este curso.`);
+        
+        alert(`¡Éxito! Tarea de "${studentName}" registrada correctamente.`);
         openCourse(cursoId);
+      };
+
+      reader.onerror = function() {
+        alert("Error al leer el archivo. Inténtalo de nuevo.");
       };
 
       reader.readAsDataURL(file);
