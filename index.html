@@ -23,14 +23,14 @@
       </div>
     </div>
     
-    <!-- Selector de Rol (Demostración interactiva) -->
+    <!-- Selector de Rol (Con Protección Estricta de Clave) -->
     <div class="flex items-center gap-4 text-sm font-medium">
       <div class="bg-indigo-800/80 p-1 rounded-lg border border-indigo-700 flex text-xs">
         <button id="btn-role-student" onclick="switchRole('estudiante')" class="px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow">
           Vista Estudiante
         </button>
-        <button id="btn-role-teacher" onclick="switchRole('docente')" class="px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white">
-          Vista Docente
+        <button id="btn-role-teacher" onclick="switchRole('docente')" class="px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white flex items-center gap-1">
+          <i data-lucide="lock" class="w-3 h-3"></i> Vista Docente
         </button>
       </div>
       <div class="hidden md:flex items-center gap-2 border-l border-indigo-700 pl-4">
@@ -49,9 +49,10 @@
 
   <script>
     // Estado Global de la App en Memoria
-    let currentRole = 'estudiante'; // 'estudiante' o 'docente'
+    let currentRole = 'estudiante'; 
+    const ADMIN_PASSWORD = "Luis0316"; // Contraseña requerida
     
-    // Base de Datos en Memoria (Simulada para funcionamiento inmediato)
+    // Base de Datos en Memoria
     const db = {
       cursos: [
         { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026', actividades: 4 },
@@ -70,8 +71,23 @@
       ]
     };
 
-    // Alternar Roles
+    // Alternar Roles solicitando la clave SIEMPRE para el docente
     function switchRole(role) {
+      if (role === 'docente') {
+        const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
+        
+        if (passInput === null) {
+          return; // Si el estudiante presiona Cancelar, no hace nada y permanece en su vista
+        }
+
+        if (passInput !== ADMIN_PASSWORD) {
+          alert("Contraseña incorrecta. Acceso denegado.");
+          return; // Bloquea el acceso si la contraseña no coincide exactamente
+        }
+
+        alert("¡Acceso concedido! Entrando al Panel del Docente.");
+      }
+
       currentRole = role;
       const btnStudent = document.getElementById('btn-role-student');
       const btnTeacher = document.getElementById('btn-role-teacher');
@@ -80,12 +96,12 @@
 
       if (role === 'estudiante') {
         btnStudent.className = "px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow";
-        btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white";
+        btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white flex items-center gap-1";
         avatar.innerText = "E";
         name.innerText = "Estudiante";
         renderEstudianteView();
       } else {
-        btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow";
+        btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow flex items-center gap-1";
         btnStudent.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white";
         avatar.innerText = "D";
         name.innerText = "Docente Administrador";
@@ -140,7 +156,7 @@
       `;
     }
 
-    // Abrir Curso para Estudiante y verificar clave
+    // Abrir Curso para Estudiante
     function openCourseStudent(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const evs = db.evaluaciones.filter(e => e.cursoId === cursoId);
@@ -196,7 +212,7 @@
       lucide.createIcons();
     }
 
-    // Validar contraseña ingresada por el estudiante
+    // Validar contraseña del examen
     function validateKey(evId, correctKey) {
       const input = document.getElementById(`key-input-${evId}`);
       if (!input || !input.value) {
@@ -206,14 +222,13 @@
 
       if (input.value === correctKey) {
         alert("¡Contraseña Correcta! Accediendo a la prueba interactiva...");
-        // Aquí inicia el examen
       } else {
         alert("Contraseña incorrecta. Consulta a tu docente asignado.");
       }
     }
 
     // ----------------------------------------------------
-    // VISTA DEL DOCENTE (Panel de Administración)
+    // VISTA DEL DOCENTE (Panel Protegido)
     // ----------------------------------------------------
     function renderDocenteView() {
       const cursosTableRows = db.cursos.map(c => `
@@ -249,12 +264,17 @@
       `).join('');
 
       document.getElementById('main-content').innerHTML = `
-        <div class="mb-8 border-b border-slate-200 pb-5">
-          <h1 class="text-2xl font-bold text-slate-900">Panel de Control del Docente</h1>
-          <p class="text-slate-500 text-sm">Gestiona claves de examen por curso y supervisa las notas en tiempo real.</p>
+        <div class="mb-8 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">Panel de Control del Docente</h1>
+            <p class="text-slate-500 text-sm">Gestiona claves de examen por curso y supervisa las notas en tiempo real.</p>
+          </div>
+          <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-start">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
+          </button>
         </div>
 
-        <!-- Tabla 1: Gestión de Claves -->
+        <!-- Tabla 1: Gestión de Claves de los Exámenes -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="font-bold text-slate-800 flex items-center gap-2">
