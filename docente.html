@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Docente - Campus Virtual EVA</title>
+  <!-- Tailwind CSS para diseño UI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Header Superior Privado Docente -->
+  <header class="bg-slate-900 text-white shadow-md py-3.5 px-6 flex justify-between items-center sticky top-0 z-50 border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="bg-indigo-600 p-2 rounded-lg text-white">
+        <i data-lucide="shield-check" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <span class="text-xl font-bold tracking-wide block leading-none">Campus Virtual EVA</span>
+        <span class="text-xs text-indigo-300">Panel Administrativo del Docente</span>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3 text-sm font-medium">
+      <span class="bg-indigo-900 text-indigo-200 border border-indigo-700 px-3 py-1 rounded-full text-xs font-semibold">Administrador</span>
+      <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+        D
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main id="main-content" class="flex-1 p-6 max-w-7xl mx-auto w-full">
+    
+    <!-- Encabezado del Panel -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-900">Gestión de Cursos, Claves y Calificaciones</h1>
+        <p class="text-slate-500 text-sm">Administra la contraseña activa de cada examen por nivel/paralelo y supervisa el rendimiento estudiantil.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="renderDocentePanel()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-500"></i> Actualizar Datos
+        </button>
+      </div>
+    </div>
+
+    <!-- Módulo 1: Asignación y Control de Contraseñas por Curso -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+      <div class="p-5 border-b border-slate-100 bg-slate-50/60 flex justify-between items-center">
+        <div>
+          <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+            <i data-lucide="key-round" class="w-5 h-5 text-indigo-600"></i> Control de Contraseñas de Examen por Curso / Nivel
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">La contraseña configurada aquí será solicitada inmediatamente al estudiante al ingresar a la prueba.</p>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100/80 text-slate-600 uppercase text-xs font-bold border-b border-slate-200">
+              <th class="py-3 px-4">Asignatura</th>
+              <th class="py-3 px-4">Curso / Paralelo</th>
+              <th class="py-3 px-4">Nivel / Subnivel</th>
+              <th class="py-3 px-4">Contraseña Activa</th>
+              <th class="py-3 px-4 text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cursos-body">
+            <!-- Carga dinámica -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Módulo 2: Libro de Calificaciones por Estudiante -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="p-5 border-b border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+            <i data-lucide="clipboard-check" class="w-5 h-5 text-indigo-600"></i> Libro de Calificaciones General
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Historial consolidado de pruebas rendidas por los estudiantes.</p>
+        </div>
+        
+        <!-- Filtro por Curso -->
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-600">Filtrar por Curso:</label>
+          <select id="filter-curso" onchange="filterGrades()" class="px-3 py-1.5 border rounded-lg text-xs bg-white font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="todos">Todos los Cursos</option>
+            <option value="3º BGU - Paralelo A">3º BGU - Paralelo A</option>
+            <option value="2º BGU - Paralelo B">2º BGU - Paralelo B</option>
+            <option value="Nivelación Intensiva">Nivelación Intensiva</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100/80 text-slate-600 uppercase text-xs font-bold border-b border-slate-200">
+              <th class="py-3 px-4">Estudiante</th>
+              <th class="py-3 px-4">Asignatura</th>
+              <th class="py-3 px-4">Curso / Paralelo</th>
+              <th class="py-3 px-4">Evaluación Rendida</th>
+              <th class="py-3 px-4">Fecha</th>
+              <th class="py-3 px-4 text-center">Calificación</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-notas-body">
+            <!-- Carga dinámica -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // Estado de datos en memoria (Simulación previa a la conexión con Supabase)
+    const dataCursos = [
+      { id: 'mat3', asignatura: 'Matemática Superior', curso: '3º BGU - Paralelo A', nivel: 'Bachillerato General Unificado', clave: 'MAT2026' },
+      { id: 'fis2', asignatura: 'Física General', curso: '2º BGU - Paralelo B', nivel: 'Bachillerato General Unificado', clave: 'FIS2026' },
+      { id: 'pre1', asignatura: 'Razonamiento Cuantitativo', curso: 'Nivelación Intensiva', nivel: 'Preuniversitario', clave: 'PRE2026' }
+    ];
+
+    const dataNotas = [
+      { id: 1, estudiante: 'Carlos Mendoza', asignatura: 'Matemática Superior', curso: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', fecha: '2026-09-25', nota: 9.50 },
+      { id: 2, estudiante: 'Ana Lucía Gómez', asignatura: 'Matemática Superior', curso: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', fecha: '2026-09-25', nota: 8.00 },
+      { id: 3, estudiante: 'Mateo Ramos', asignatura: 'Física General', curso: '2º BGU - Paralelo B', evaluacion: 'Cinemática y Dinámica', fecha: '2026-09-26', nota: 10.00 },
+      { id: 4, estudiante: 'Sofía Benítez', asignatura: 'Razonamiento Cuantitativo', curso: 'Nivelación Intensiva', evaluacion: 'Simulador de Examen de Admisión', fecha: '2026-09-26', nota: 6.50 }
+    ];
+
+    function renderDocentePanel() {
+      // Cargar Cursos y Claves
+      const cursosBody = document.getElementById('tabla-cursos-body');
+      cursosBody.innerHTML = dataCursos.map(c => `
+        <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
+          <td class="py-3.5 px-4 font-bold text-indigo-950">${c.asignatura}</td>
+          <td class="py-3.5 px-4 font-semibold text-slate-800">${c.curso}</td>
+          <td class="py-3.5 px-4 text-xs text-slate-500">${c.nivel}</td>
+          <td class="py-3.5 px-4">
+            <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200/80 px-3 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="lock" class="w-3 h-3 text-amber-600"></i> ${c.clave}
+            </span>
+          </td>
+          <td class="py-3.5 px-4 text-right">
+            <button onclick="updateCourseKey('${c.id}')" class="bg-slate-900 hover:bg-indigo-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors shadow-sm inline-flex items-center gap-1">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Cambiar Clave
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      renderGradesTable(dataNotas);
+      lucide.createIcons();
+    }
+
+    function renderGradesTable(notasArray) {
+      const notasBody = document.getElementById('tabla-notas-body');
+      
+      if (notasArray.length === 0) {
+        notasBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400 text-xs">No hay calificaciones registradas para el filtro seleccionado.</td></tr>`;
+        return;
+      }
+
+      notasBody.innerHTML = notasArray.map(n => `
+        <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
+          <td class="py-3.5 px-4 font-bold text-slate-900">${n.estudiante}</td>
+          <td class="py-3.5 px-4 text-slate-700 font-medium">${n.asignatura}</td>
+          <td class="py-3.5 px-4 text-xs text-slate-500">${n.curso}</td>
+          <td class="py-3.5 px-4 text-slate-600">${n.evaluacion}</td>
+          <td class="py-3.5 px-4 text-xs text-slate-400 font-mono">${n.fecha}</td>
+          <td class="py-3.5 px-4 text-center">
+            <span class="font-bold px-2.5 py-1 rounded-md text-xs inline-block ${n.nota >= 7 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'}">
+              ${n.nota.toFixed(2)} / 10.00
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterGrades() {
+      const filterValue = document.getElementById('filter-curso').value;
+      if (filterValue === 'todos') {
+        renderGradesTable(dataNotas);
+      } else {
+        const filtered = dataNotas.filter(n => n.curso === filterValue);
+        renderGradesTable(filtered);
+      }
+      lucide.createIcons();
+    }
+
+    function updateCourseKey(cursoId) {
+      const c = dataCursos.find(item => item.id === cursoId);
+      const newKey = prompt(`Ingresa la nueva contraseña para las evaluaciones de "${c.asignatura}" (${c.curso}):`, c.clave);
+      
+      if (newKey && newKey.trim() !== '') {
+        c.clave = newKey.trim();
+        alert(`¡Contraseña actualizada con éxito!\nCurso: ${c.curso}\nNueva Clave: ${c.clave}`);
+        renderDocentePanel();
+      }
+    }
+
+    window.onload = renderDocentePanel;
+  </script>
+</body>
+</html>
