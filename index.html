@@ -23,7 +23,7 @@
       </div>
     </div>
     
-    <!-- Selector de Rol (Con Protección Estricta de Clave) -->
+    <!-- Selector de Rol -->
     <div class="flex items-center gap-4 text-sm font-medium">
       <div class="bg-indigo-800/80 p-1 rounded-lg border border-indigo-700 flex text-xs">
         <button id="btn-role-student" onclick="switchRole('estudiante')" class="px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow">
@@ -50,9 +50,9 @@
   <script>
     // Estado Global de la App en Memoria
     let currentRole = 'estudiante'; 
-    const ADMIN_PASSWORD = "Luis0316"; // Contraseña requerida
+    const ADMIN_PASSWORD = "Luis0316"; 
     
-    // Base de Datos en Memoria
+    // Base de Datos Dinámica
     const db = {
       cursos: [
         { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026', actividades: 4 },
@@ -76,13 +76,11 @@
       if (role === 'docente') {
         const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
         
-        if (passInput === null) {
-          return; // Si el estudiante presiona Cancelar, no hace nada y permanece en su vista
-        }
+        if (passInput === null) return;
 
         if (passInput !== ADMIN_PASSWORD) {
           alert("Contraseña incorrecta. Acceso denegado.");
-          return; // Bloquea el acceso si la contraseña no coincide exactamente
+          return;
         }
 
         alert("¡Acceso concedido! Entrando al Panel del Docente.");
@@ -146,7 +144,7 @@
             <p class="text-slate-500 text-sm">Entorno Virtual de Aprendizaje - Selecciona tu curso asignado.</p>
           </div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sistema Activo
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${db.cursos.length} Cursos Disponibles
           </span>
         </div>
 
@@ -156,7 +154,6 @@
       `;
     }
 
-    // Abrir Curso para Estudiante
     function openCourseStudent(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const evs = db.evaluaciones.filter(e => e.cursoId === cursoId);
@@ -185,7 +182,7 @@
             </div>
           ` : `<span class="text-xs text-slate-400 italic">No disponible actualmente</span>`}
         </div>
-      `).join('') : '<p class="text-slate-500 text-sm">No hay evaluaciones programadas para esta asignatura.</p>';
+      `).join('') : '<p class="text-slate-500 text-sm">No hay evaluaciones programadas para este curso.</p>';
 
       document.getElementById('main-content').innerHTML = `
         <button onclick="renderEstudianteView(); lucide.createIcons();" class="mb-5 flex items-center gap-1.5 text-sm text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
@@ -212,7 +209,6 @@
       lucide.createIcons();
     }
 
-    // Validar contraseña del examen
     function validateKey(evId, correctKey) {
       const input = document.getElementById(`key-input-${evId}`);
       if (!input || !input.value) {
@@ -228,7 +224,7 @@
     }
 
     // ----------------------------------------------------
-    // VISTA DEL DOCENTE (Panel Protegido)
+    // VISTA DEL DOCENTE (Panel de Administración)
     // ----------------------------------------------------
     function renderDocenteView() {
       const cursosTableRows = db.cursos.map(c => `
@@ -267,18 +263,48 @@
         <div class="mb-8 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Panel de Control del Docente</h1>
-            <p class="text-slate-500 text-sm">Gestiona claves de examen por curso y supervisa las notas en tiempo real.</p>
+            <p class="text-slate-500 text-sm">Agrega nuevos cursos, gestiona claves de exámenes y supervisa las notas.</p>
           </div>
           <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-start">
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
           </button>
         </div>
 
+        <!-- Módulo: Agregar Nuevo Curso -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+          <h2 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Registrar Nuevo Curso / Asignatura
+          </h2>
+          <form onsubmit="addNewCourse(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Curso</label>
+              <input type="text" id="new-course-name" placeholder="Ej: Álgebra Lineal" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Asignatura</label>
+              <input type="text" id="new-course-subject" placeholder="Ej: Matemática" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Nivel / Paralelo</label>
+              <input type="text" id="new-course-level" placeholder="Ej: 1º BGU - Paralelo C" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Examen</label>
+              <input type="text" id="new-course-key" placeholder="Ej: ALG2026" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="flex items-end">
+              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="save" class="w-4 h-4"></i> Guardar Curso
+              </button>
+            </div>
+          </form>
+        </div>
+
         <!-- Tabla 1: Gestión de Claves de los Exámenes -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="font-bold text-slate-800 flex items-center gap-2">
-              <i data-lucide="key-round" class="w-5 h-5 text-indigo-600"></i> Asignación de Contraseñas por Curso / Nivel
+              <i data-lucide="key-round" class="w-5 h-5 text-indigo-600"></i> Asignación de Contraseñas por Curso
             </h2>
           </div>
           <div class="overflow-x-auto">
@@ -324,6 +350,32 @@
           </div>
         </div>
       `;
+    }
+
+    // Agregar nuevo curso a la base de datos
+    function addNewCourse(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('new-course-name').value.trim();
+      const subject = document.getElementById('new-course-subject').value.trim();
+      const level = document.getElementById('new-course-level').value.trim();
+      const key = document.getElementById('new-course-key').value.trim();
+
+      const newId = 'c_' + Date.now();
+
+      db.cursos.push({
+        id: newId,
+        nombre: name,
+        asignatura: subject,
+        nivel: level,
+        clave: key,
+        actividades: 1
+      });
+
+      alert(`¡El curso "${name}" ha sido agregado con éxito! Ya está disponible en el catálogo estudiantil.`);
+      
+      renderDocenteView();
+      lucide.createIcons();
     }
 
     // Cambiar la clave de un curso como docente
