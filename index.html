@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campus Virtual EVA - Sistema de Aprendizaje</title>
-  <!-- Tailwind CSS para el diseño UI -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -19,7 +19,7 @@
       </div>
       <div>
         <span class="text-xl font-bold tracking-wide block leading-none">Campus Virtual EVA</span>
-        <span class="text-xs text-indigo-300">Plataforma de Aprendizaje y Evaluación</span>
+        <span class="text-xs text-indigo-300">Plataforma de Aprendizaje y Gestión Académica</span>
       </div>
     </div>
     
@@ -48,43 +48,44 @@
   </main>
 
   <script>
-    // Estado Global
     let currentRole = 'estudiante'; 
     const ADMIN_PASSWORD = "Luis0316"; 
     
-    // Base de Datos Dinámica (Incluye Cursos de Robótica de 2º EGB a 3º BGU)
+    // Base de Datos en Memoria con Entregas Registradas
     const db = {
       cursos: [
-        { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026', actividades: 4 },
-        { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026', actividades: 2 },
-        { id: 'pre1', nombre: 'Razonamiento Cuantitativo', asignatura: 'Preuniversitario', nivel: 'Nivelación Intensiva', clave: 'PRE2026', actividades: 5 },
+        { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026' },
+        { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026' },
         
-        // Cursos de Robótica Educativa
-        { id: 'rob_2egb', nombre: 'Robótica Inicial - Mecanismos Básicos', asignatura: 'Robótica', nivel: '2º EGB', clave: 'ROB2EGB', actividades: 1 },
-        { id: 'rob_3egb', nombre: 'Robótica Educativa - Engranajes y Palancas', asignatura: 'Robótica', nivel: '3º EGB', clave: 'ROB3EGB', actividades: 1 },
-        { id: 'rob_4egb', nombre: 'Robótica Educativa - Circuitos Básicos', asignatura: 'Robótica', nivel: '4º EGB', clave: 'ROB4EGB', actividades: 1 },
-        { id: 'rob_5egb', nombre: 'Robótica y Automatas I', asignatura: 'Robótica', nivel: '5º EGB', clave: 'ROB5EGB', actividades: 1 },
-        { id: 'rob_6egb', nombre: 'Robótica y Sensórica I', asignatura: 'Robótica', nivel: '6º EGB', clave: 'ROB6EGB', actividades: 1 },
-        { id: 'rob_7egb', nombre: 'Robótica y Sensórica II', asignatura: 'Robótica', nivel: '7º EGB', clave: 'ROB7EGB', actividades: 1 },
-        { id: 'rob_8egb', nombre: 'Programación de Bloques y Algoritmos', asignatura: 'Robótica', nivel: '8º EGB', clave: 'ROB8EGB', actividades: 2 },
-        { id: 'rob_9egb', nombre: 'Electrónica y Microcontroladores I', asignatura: 'Robótica', nivel: '9º EGB', clave: 'ROB9EGB', actividades: 2 },
-        { id: 'rob_10egb', nombre: 'Electrónica y Microcontroladores II', asignatura: 'Robótica', nivel: '10º EGB', clave: 'ROB10EGB', actividades: 2 },
-        { id: 'rob_1bgu', nombre: 'Robótica Aplicada - Micro:bit y Arduino', asignatura: 'Robótica', nivel: '1º BGU', clave: 'ROB1BGU', actividades: 3 },
-        { id: 'rob_2bgu', nombre: 'Robótica Avanzada - Sistemas Embebidos y ESP32', asignatura: 'Robótica', nivel: '2º BGU', clave: 'ROB2BGU', actividades: 3 },
-        { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU', actividades: 3 }
+        // Cursos de Robótica
+        { id: 'rob_2egb', nombre: 'Robótica Inicial - Mecanismos Básicos', asignatura: 'Robótica', nivel: '2º EGB', clave: 'ROB2EGB' },
+        { id: 'rob_3egb', nombre: 'Robótica Educativa - Engranajes y Palancas', asignatura: 'Robótica', nivel: '3º EGB', clave: 'ROB3EGB' },
+        { id: 'rob_4egb', nombre: 'Robótica Educativa - Circuitos Básicos', asignatura: 'Robótica', nivel: '4º EGB', clave: 'ROB4EGB' },
+        { id: 'rob_5egb', nombre: 'Robótica y Autómatas I', asignatura: 'Robótica', nivel: '5º EGB', clave: 'ROB5EGB' },
+        { id: 'rob_6egb', nombre: 'Robótica y Sensórica I', asignatura: 'Robótica', nivel: '6º EGB', clave: 'ROB6EGB' },
+        { id: 'rob_7egb', nombre: 'Robótica y Sensórica II', asignatura: 'Robótica', nivel: '7º EGB', clave: 'ROB7EGB' },
+        { id: 'rob_8egb', nombre: 'Programación de Bloques y Algoritmos', asignatura: 'Robótica', nivel: '8º EGB', clave: 'ROB8EGB' },
+        { id: 'rob_9egb', nombre: 'Electrónica y Microcontroladores I', asignatura: 'Robótica', nivel: '9º EGB', clave: 'ROB9EGB' },
+        { id: 'rob_10egb', nombre: 'Electrónica y Microcontroladores II', asignatura: 'Robótica', nivel: '10º EGB', clave: 'ROB10EGB' },
+        { id: 'rob_1bgu', nombre: 'Robótica Aplicada - Micro:bit y Arduino', asignatura: 'Robótica', nivel: '1º BGU', clave: 'ROB1BGU' },
+        { id: 'rob_2bgu', nombre: 'Robótica Avanzada - ESP32 y Domótica', asignatura: 'Robótica', nivel: '2º BGU', clave: 'ROB2BGU' },
+        { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU' }
       ],
       actividades: [
-        { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30, activa: true },
-        { id: 'act2', cursoId: 'fis2', tipo: 'Prueba', titulo: 'Prueba: Cinemática y Dinámica', detalle: '15 Preguntas de selección múltiple', tiempo: 45, activa: true },
-        { id: 'act3', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Taller 1: Configuración de Entorno ESP32', detalle: 'Subir reporte PDF con diagrama de circuito en Fritzing.', tiempo: 0, activa: true }
+        { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30 },
+        { id: 'act2', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Deber 1: Diagrama de Conexiones ESP32', detalle: 'Subir esquemático en formato PDF con la guía de puertos asignada.', tiempo: 0 },
+        { id: 'act3', cursoId: 'rob_5egb', tipo: 'Tarea', titulo: 'Deber 1: Diseño de Mecanismo de Transmisión', detalle: 'Adjuntar ficha de trabajo en PDF.', tiempo: 0 }
       ],
-      notas: [
-        { id: 1, estudiante: 'Carlos Mendoza', curso: 'Matemática Superior', nivel: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', nota: 9.50, fecha: '2026-09-25' },
-        { id: 2, estudiante: 'Ana Lucía Gómez', curso: 'Matemática Superior', nivel: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', nota: 8.00, fecha: '2026-09-25' }
+      // Almacenamiento de tareas/PDFs enviados por estudiantes
+      entregas: [
+        { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', fecha: '2026-09-25 14:30', nota: 10.00 },
+        { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', fecha: '2026-09-25 10:15', nota: 9.50 },
+        { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', fecha: '2026-09-26 08:20', nota: 8.50 },
+        { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-26 11:00', nota: 9.00 },
+        { id: 'ent5', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Aguirre Pedro', archivoNombre: 'Trabajo_Mecanismos_Aguirre.pdf', fecha: '2026-09-26 09:45', nota: 10.00 }
       ]
     };
 
-    // Alternar Roles solicitando clave
     function switchRole(role) {
       if (role === 'docente') {
         const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
@@ -118,7 +119,7 @@
     }
 
     // ----------------------------------------------------
-    // VISTA DEL ESTUDIANTE
+    // VISTA ESTUDIANTE
     // ----------------------------------------------------
     function renderEstudianteView() {
       const cursosCards = db.cursos.map(c => `
@@ -131,7 +132,7 @@
                 <span class="text-xs font-semibold text-slate-400">${c.nivel}</span>
               </div>
               <h3 class="text-base font-bold text-slate-900 mt-1">${c.nombre}</h3>
-              <p class="text-slate-500 text-xs mt-1.5">Módulos de estudio, tareas prácticas y evaluaciones programadas.</p>
+              <p class="text-slate-500 text-xs mt-1.5">Accede a las tareas publicadas y sube tus informes en formato PDF.</p>
             </div>
             
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -150,10 +151,10 @@
         <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Mis Asignaturas y Cursos</h1>
-            <p class="text-slate-500 text-sm">Entorno Virtual de Aprendizaje - Explora tus asignaturas asignadas.</p>
+            <p class="text-slate-500 text-sm">Entorno Virtual de Aprendizaje - Selecciona tu materia para enviar tareas.</p>
           </div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${db.cursos.length} Cursos Activos
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${db.cursos.length} Cursos Registrados
           </span>
         </div>
 
@@ -164,65 +165,82 @@
     }
 
     // ----------------------------------------------------
-    // VISTA DENTRO DE UN CURSO (Estudiante y Docente)
+    // DENTRO DEL CURSO
     // ----------------------------------------------------
     function openCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const acts = db.actividades.filter(a => a.cursoId === cursoId);
 
       const actsHTML = acts.length > 0 ? acts.map(a => `
-        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-xs font-bold px-2 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
-                ${a.tipo}
-              </span>
-              ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
+        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 flex flex-col gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100/60 pb-3">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold px-2 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
+                  ${a.tipo}
+                </span>
+                ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
+              </div>
+              <h4 class="font-bold text-indigo-950 text-base">${a.titulo}</h4>
+              <p class="text-xs text-slate-600 mt-0.5">${a.detalle}</p>
             </div>
-            <h4 class="font-bold text-indigo-950 text-sm sm:text-base">${a.titulo}</h4>
-            <p class="text-xs text-slate-500 mt-0.5">${a.detalle}</p>
           </div>
 
-          ${a.tipo === 'Prueba' ? `
+          ${a.tipo === 'Tarea' ? `
+            <!-- Formulario de Entrega PDF para Estudiantes -->
+            <div class="bg-white p-3 rounded-lg border border-indigo-100 mt-1">
+              <span class="text-xs font-bold text-indigo-900 block mb-2 flex items-center gap-1">
+                <i data-lucide="upload" class="w-3.5 h-3.5 text-indigo-600"></i> Formulario de Entrega de Tarea (PDF)
+              </span>
+              <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div>
+                  <input type="text" id="student-name-${a.id}" placeholder="Apellidos y Nombres" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
+                <div>
+                  <input type="file" id="student-file-${a.id}" accept=".pdf" required class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <div>
+                  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
+                    <i data-lucide="file-check" class="w-3.5 h-3.5"></i> Subir Tarea PDF
+                  </button>
+                </div>
+              </form>
+            </div>
+          ` : `
             <div class="flex items-center gap-2">
               <input type="password" id="key-input-${a.id}" placeholder="Clave..." class="px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-indigo-500 w-32">
               <button onclick="validateKey('${a.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
                 <i data-lucide="key" class="w-3.5 h-3.5"></i> Rendir
               </button>
             </div>
-          ` : `
-            <button onclick="alert('Módulo de entrega de tareas habilitado.')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 self-start sm:self-center">
-              <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Entregar Tarea
-            </button>
           `}
         </div>
-      `).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o pruebas asignadas a este curso.</p>';
+      `).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o evaluaciones asignadas en este momento.</p>';
 
       const teacherControls = currentRole === 'docente' ? `
-        <!-- Formulario para agregar Actividades/Pruebas -->
-        <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-5 mb-6">
-          <h3 class="font-bold text-amber-900 text-sm mb-3 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600"></i> (Panel Docente) Asignar Tarea o Prueba a este Curso
+        <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 mb-6">
+          <h3 class="font-bold text-amber-900 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wide">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600"></i> Publicar Nueva Tarea o Prueba en este Curso
           </h3>
           <form onsubmit="addActivity(event, '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Actividad</label>
-              <select id="new-act-type" class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Tipo</label>
+              <select id="new-act-type" class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
+                <option value="Tarea">Tarea (Requiere PDF)</option>
                 <option value="Prueba">Prueba / Examen</option>
-                <option value="Tarea">Tarea / Taller</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Título de la Actividad</label>
-              <input type="text" id="new-act-title" placeholder="Ej: Taller 1: Ensamblado" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Título de la Actividad</label>
+              <input type="text" id="new-act-title" placeholder="Ej: Deber 2: Circuitos Serie" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Detalle / Instrucciones</label>
-              <input type="text" id="new-act-detail" placeholder="Ej: Resolver guía adjunta" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Instrucciones</label>
+              <input type="text" id="new-act-detail" placeholder="Ej: Subir reporte en formato PDF" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
             </div>
             <div class="flex items-end">
-              <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
-                <i data-lucide="save" class="w-3.5 h-3.5"></i> Publicar Actividad
+              <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
+                <i data-lucide="save" class="w-3.5 h-3.5"></i> Publicar
               </button>
             </div>
           </form>
@@ -242,7 +260,7 @@
               <p class="text-slate-500 text-sm">${curso.nivel}</p>
             </div>
             <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
-              <i data-lucide="lock" class="w-3 h-3"></i> Clave: ${curso.clave}
+              <i data-lucide="lock" class="w-3 h-3"></i> Clave Examen: ${curso.clave}
             </span>
           </div>
 
@@ -250,9 +268,9 @@
 
           <div>
             <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-              <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i> Tareas y Evaluaciones de la Asignatura
+              <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i> Tareas y Pruebas del Curso
             </h3>
-            <div class="space-y-3">
+            <div class="space-y-4">
               ${actsHTML}
             </div>
           </div>
@@ -261,7 +279,33 @@
       lucide.createIcons();
     }
 
-    // Agregar Nueva Actividad/Tarea desde la Vista Docente dentro del Curso
+    // Guardar Entrega del Estudiante
+    function submitHomework(event, actId, cursoId) {
+      event.preventDefault();
+      const studentName = document.getElementById(`student-name-${actId}`).value.trim();
+      const fileInput = document.getElementById(`student-file-${actId}`);
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Por favor selecciona un archivo PDF.");
+        return;
+      }
+
+      const fileName = fileInput.files[0].name;
+
+      db.entregas.push({
+        id: 'ent_' + Date.now(),
+        actividadId: actId,
+        cursoId: cursoId,
+        estudiante: studentName,
+        archivoNombre: fileName,
+        fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        nota: 0.00
+      });
+
+      alert(`¡Tarea enviada con éxito por ${studentName}! Tu docente la revisará en la sección clasificatoria de entregas PDF.`);
+      openCourse(cursoId);
+    }
+
     function addActivity(event, cursoId) {
       event.preventDefault();
       const type = document.getElementById('new-act-type').value;
@@ -274,69 +318,141 @@
         tipo: type,
         titulo: title,
         detalle: detail,
-        tiempo: type === 'Prueba' ? 30 : 0,
-        activa: true
+        tiempo: type === 'Prueba' ? 30 : 0
       });
 
-      alert(`¡${type} publicada correctamente para este curso!`);
+      alert(`¡${type} publicada en el curso!`);
       openCourse(cursoId);
     }
 
-    // Validar contraseña del examen
     function validateKey(evId, correctKey) {
       const input = document.getElementById(`key-input-${evId}`);
-      if (!input || !input.value) {
-        alert("Por favor ingresa la contraseña para desbloquear la evaluación.");
-        return;
-      }
-
-      if (input.value === correctKey) {
+      if (input && input.value === correctKey) {
         alert("¡Contraseña Correcta! Accediendo a la prueba interactiva...");
       } else {
-        alert("Contraseña incorrecta. Revisa la clave asignada por tu docente.");
+        alert("Contraseña incorrecta.");
       }
     }
 
     // ----------------------------------------------------
-    // VISTA DEL DOCENTE (Panel de Administración)
+    // VISTA DOCENTE Y CENTRO DE RECEPCIÓN PDF CLASIFICADO
     // ----------------------------------------------------
     function renderDocenteView() {
+      // 1. Render de Tabla de Cursos
       const cursosTableRows = db.cursos.map(c => `
         <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
-          <td class="py-3 px-4 font-bold text-slate-900">${c.nombre}</td>
-          <td class="py-3 px-4 text-slate-600">${c.nivel}</td>
-          <td class="py-3 px-4 font-semibold text-indigo-600">${c.asignatura}</td>
-          <td class="py-3 px-4">
+          <td class="py-2.5 px-3 font-bold text-slate-900">${c.nombre}</td>
+          <td class="py-2.5 px-3 text-slate-600">${c.nivel}</td>
+          <td class="py-2.5 px-3 font-semibold text-indigo-600">${c.asignatura}</td>
+          <td class="py-2.5 px-3">
             <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
               <i data-lucide="lock" class="w-3 h-3"></i> ${c.clave}
             </span>
           </td>
-          <td class="py-3 px-4 flex items-center gap-2">
-            <button onclick="openCourse('${c.id}')" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-semibold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-              <i data-lucide="edit-3" class="w-3 h-3"></i> Tareas/Pruebas
+          <td class="py-2.5 px-3 flex items-center gap-2">
+            <button onclick="openCourse('${c.id}')" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-semibold px-2 py-1 rounded-lg transition-colors flex items-center gap-1">
+              <i data-lucide="edit-3" class="w-3 h-3"></i> Tareas
             </button>
-            <button onclick="changeKey('${c.id}')" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-2.5 py-1.5 rounded-lg transition-colors">
+            <button onclick="changeKey('${c.id}')" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-2 py-1 rounded-lg transition-colors">
               Clave
             </button>
-            <button onclick="deleteCourse('${c.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold px-2 py-1.5 rounded-lg transition-colors title="Eliminar Curso"">
+            <button onclick="deleteCourse('${c.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold px-2 py-1 rounded-lg transition-colors" title="Eliminar Curso">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </td>
         </tr>
       `).join('');
 
+      // 2. Clasificación de Entregas PDF por Curso, Año y Orden Alfabético
+      let entregasClasificadasHTML = '';
+
+      db.cursos.forEach(curso => {
+        // Filtrar entregas pertenecientes a este curso
+        let entregasCurso = db.entregas.filter(e => e.cursoId === curso.id);
+
+        if (entregasCurso.length > 0) {
+          // ORDEN ALFABÉTICO por apellido/nombre del estudiante
+          entregasCurso.sort((a, b) => a.estudiante.localeCompare(b.estudiante));
+
+          const filasEntregas = entregasCurso.map(e => {
+            const act = db.actividades.find(a => a.id === e.actividadId);
+            return `
+              <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <td class="py-2.5 px-4 font-bold text-slate-900 flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black">
+                    ${e.estudiante.charAt(0)}
+                  </div>
+                  ${e.estudiante}
+                </td>
+                <td class="py-2.5 px-4 text-slate-700 font-medium">${act ? act.titulo : 'Tarea'}</td>
+                <td class="py-2.5 px-4">
+                  <a href="#" onclick="alert('Abriendo vista previa del PDF subido: ${e.archivoNombre}'); return false;" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-100 transition-colors">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5 text-rose-600"></i> ${e.archivoNombre}
+                  </a>
+                </td>
+                <td class="py-2.5 px-4 text-slate-500 text-xs">${e.fecha}</td>
+                <td class="py-2.5 px-4">
+                  <button onclick="gradeAssignment('${e.id}')" class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-md font-bold transition-colors">
+                    ${e.nota > 0 ? e.nota.toFixed(2) + ' / 10' : 'Calificar'}
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          entregasClasificadasHTML += `
+            <div class="mb-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <div class="bg-indigo-900 text-white px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold bg-indigo-700 text-indigo-200 px-2.5 py-0.5 rounded-md uppercase tracking-wider">${curso.asignatura}</span>
+                  <h3 class="font-bold text-sm">${curso.nombre} - <span class="text-indigo-300 font-normal">${curso.nivel}</span></h3>
+                </div>
+                <span class="text-xs bg-indigo-800 text-indigo-200 px-2.5 py-1 rounded-full font-semibold">
+                  ${entregasCurso.length} Tareas Recibidas (Orden Alfabético A-Z)
+                </span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-100/80 text-slate-600 uppercase text-[10px] font-bold">
+                      <th class="py-2.5 px-4">Estudiante (Nombre y Apellido)</th>
+                      <th class="py-2.5 px-4">Tarea Asignada</th>
+                      <th class="py-2.5 px-4">Archivo Documento PDF</th>
+                      <th class="py-2.5 px-4">Fecha de Envío</th>
+                      <th class="py-2.5 px-4">Calificación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${filasEntregas}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      if (entregasClasificadasHTML === '') {
+        entregasClasificadasHTML = `
+          <div class="p-8 text-center bg-white rounded-xl border border-slate-200">
+            <i data-lucide="folder-open" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-slate-500 text-xs italic">Aún no hay archivos PDF enviados por los estudiantes.</p>
+          </div>
+        `;
+      }
+
       document.getElementById('main-content').innerHTML = `
         <div class="mb-6 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <h1 class="text-2xl font-bold text-slate-900">Panel de Control del Docente</h1>
-            <p class="text-slate-500 text-sm">Administra la oferta académica, asigna tareas/pruebas y controla claves de acceso.</p>
+            <h1 class="text-2xl font-bold text-slate-900">Panel Docente Administrador</h1>
+            <p class="text-slate-500 text-sm">Gestión de oferta académica y centro de recepción de tareas en formato PDF.</p>
           </div>
           <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-start">
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
           </button>
         </div>
 
-        <!-- Módulo: Agregar Nuevo Curso -->
+        <!-- Módulo de Creación de Cursos -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8">
           <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
             <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i> Registrar Nuevo Curso / Asignatura
@@ -344,19 +460,19 @@
           <form onsubmit="addNewCourse(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Curso</label>
-              <input type="text" id="new-course-name" placeholder="Ej: Robótica Educativa" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-name" placeholder="Ej: Robótica Educativa" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Asignatura</label>
-              <input type="text" id="new-course-subject" placeholder="Ej: Robótica" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-subject" placeholder="Ej: Robótica" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Nivel / Paralelo</label>
-              <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <label class="block text-xs font-bold text-slate-600 mb-1">Nivel / Subnivel / Año</label>
+              <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Examen</label>
-              <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div class="flex items-end">
               <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
@@ -366,22 +482,32 @@
           </form>
         </div>
 
-        <!-- Tabla: Gestor de Cursos -->
+        <!-- MÓDULO PRINCIPAL: Recepción y Clasificación de Tareas PDF -->
+        <div class="mb-8">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="folder-archive" class="w-5 h-5 text-indigo-600"></i> Centro de Recepción PDF Clasificado (Curso, Año y A-Z)
+            </h2>
+          </div>
+          ${entregasClasificadasHTML}
+        </div>
+
+        <!-- Tabla: Catálogo de Cursos -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i> Catálogo Completo de Cursos (${db.cursos.length})
+              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i> Catálogo de Asignaturas (${db.cursos.length})
             </h2>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
-                <tr class="bg-slate-100/70 text-slate-600 uppercase text-[11px] font-bold">
-                  <th class="py-3 px-4">Curso</th>
-                  <th class="py-3 px-4">Nivel / Subnivel</th>
-                  <th class="py-3 px-4">Asignatura</th>
-                  <th class="py-3 px-4">Contraseña</th>
-                  <th class="py-3 px-4">Acciones y Gestión</th>
+                <tr class="bg-slate-100/70 text-slate-600 uppercase text-[10px] font-bold">
+                  <th class="py-2.5 px-3">Curso</th>
+                  <th class="py-2.5 px-3">Nivel / Año</th>
+                  <th class="py-2.5 px-3">Asignatura</th>
+                  <th class="py-2.5 px-3">Clave Examen</th>
+                  <th class="py-2.5 px-3">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -393,7 +519,18 @@
       `;
     }
 
-    // Agregar nuevo curso a la base de datos
+    // Calificar Tarea
+    function gradeAssignment(entregaId) {
+      const entrega = db.entregas.find(e => e.id === entregaId);
+      const val = prompt(`Ingresa la nota sobre 10 para ${entrega.estudiante}:`, entrega.nota || 10);
+      if (val !== null && !isNaN(val)) {
+        entrega.nota = parseFloat(val);
+        alert(`Nota de ${entrega.estudiante} guardada: ${entrega.nota.toFixed(2)}/10`);
+        renderDocenteView();
+        lucide.createIcons();
+      }
+    }
+
     function addNewCourse(event) {
       event.preventDefault();
       const name = document.getElementById('new-course-name').value.trim();
@@ -406,40 +543,35 @@
         nombre: name,
         asignatura: subject,
         nivel: level,
-        clave: key,
-        actividades: 0
+        clave: key
       });
 
-      alert(`¡El curso "${name}" ha sido publicado exitosamente!`);
+      alert(`Curso "${name}" publicado exitosamente.`);
       renderDocenteView();
       lucide.createIcons();
     }
 
-    // Eliminar un curso
     function deleteCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
-      if (confirm(`¿Estás seguro de que deseas eliminar el curso "${curso.nombre}" (${curso.nivel})?`)) {
+      if (confirm(`¿Deseas eliminar el curso "${curso.nombre}"?`)) {
         db.cursos = db.cursos.filter(c => c.id !== cursoId);
         db.actividades = db.actividades.filter(a => a.cursoId !== cursoId);
-        alert("Curso eliminado correctamente.");
+        db.entregas = db.entregas.filter(e => e.cursoId !== cursoId);
         renderDocenteView();
         lucide.createIcons();
       }
     }
 
-    // Cambiar clave
     function changeKey(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const newKey = prompt(`Nueva clave para "${curso.nombre}":`, curso.clave);
       if (newKey && newKey.trim() !== '') {
         curso.clave = newKey.trim();
-        alert(`Clave actualizada a: ${curso.clave}`);
         renderDocenteView();
         lucide.createIcons();
       }
     }
 
-    // Inicialización
     window.onload = () => {
       renderEstudianteView();
       lucide.createIcons();
