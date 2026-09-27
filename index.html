@@ -51,7 +51,7 @@
     let currentRole = 'estudiante'; 
     const ADMIN_PASSWORD = "Luis0316"; 
     
-    // Cursos predeterminados
+    // Cursos predeterminados con sus claves de matriculación obligatorias
     const defaultCursos = [
       { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026' },
       { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026' },
@@ -82,7 +82,7 @@
       { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-26 11:00', nota: 9.00 }
     ];
 
-    // Cargar datos de localStorage o inicializar predeterminados
+    // Cargar datos de localStorage
     let db = {
       cursos: JSON.parse(localStorage.getItem('eva_cursos')) || defaultCursos,
       actividades: JSON.parse(localStorage.getItem('eva_actividades')) || defaultActividades,
@@ -128,6 +128,30 @@
     }
 
     // ----------------------------------------------------
+    // ACCESO RESTRINGIDO POR CONTRASEÑA
+    // ----------------------------------------------------
+    function accessCourse(cursoId) {
+      const curso = db.cursos.find(c => c.id === cursoId);
+      
+      // Si el docente está activo, ingresa directamente sin validar contraseña
+      if (currentRole === 'docente') {
+        openCourse(cursoId);
+        return;
+      }
+
+      // Validación para Estudiantes
+      const userKey = prompt(`🔒 CURSO CON ACCESO RESTRINGIDO\n\nAsignatura: ${curso.nombre} (${curso.nivel})\n\nPor favor, ingresa la clave del curso proporcionada por tu docente:`);
+
+      if (userKey === null) return; // Canceló el prompt
+
+      if (userKey.trim() === curso.clave) {
+        openCourse(cursoId);
+      } else {
+        alert("❌ Clave incorrecta. No tienes permiso para acceder a este curso o enviar deberes en él.");
+      }
+    }
+
+    // ----------------------------------------------------
     // VISTA ESTUDIANTE
     // ----------------------------------------------------
     function renderEstudianteView() {
@@ -141,15 +165,15 @@
                 <span class="text-xs font-semibold text-slate-400">${c.nivel}</span>
               </div>
               <h3 class="text-base font-bold text-slate-900 mt-1">${c.nombre}</h3>
-              <p class="text-slate-500 text-xs mt-1.5">Accede a las tareas publicadas y sube tus informes en formato PDF.</p>
+              <p class="text-slate-500 text-xs mt-1.5">Requiere clave de matriculación para ingresar y subir archivos.</p>
             </div>
             
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
               <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-500"></i> ${db.actividades.filter(a => a.cursoId === c.id).length} Actividades
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-500"></i> Protegido
               </span>
-              <button onclick="openCourse('${c.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1 shadow-sm">
-                Ingresar <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              <button onclick="accessCourse('${c.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="key" class="w-3.5 h-3.5"></i> Ingresar al Curso
               </button>
             </div>
           </div>
@@ -159,11 +183,11 @@
       document.getElementById('main-content').innerHTML = `
         <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
           <div>
-            <h1 class="text-2xl font-bold text-slate-900">Mis Asignaturas y Cursos</h1>
-            <p class="text-slate-500 text-sm">Entorno Virtual de Aprendizaje - Selecciona tu materia para enviar tareas.</p>
+            <h1 class="text-2xl font-bold text-slate-900">Catálogo de Cursos y Asignaturas</h1>
+            <p class="text-slate-500 text-sm">Selecciona tu materia e ingresa tu clave para enviar tus deberes en formato PDF.</p>
           </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${db.cursos.length} Cursos Registrados
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start">
+            <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i> Acceso Seguro Activo
           </span>
         </div>
 
@@ -174,14 +198,13 @@
     }
 
     // ----------------------------------------------------
-    // DENTRO DEL CURSO Y SUBIDA DE PDF
+    // DENTRO DEL CURSO DESBLOQUEADO
     // ----------------------------------------------------
     function openCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const acts = db.actividades.filter(a => a.cursoId === cursoId);
 
       const actsHTML = acts.length > 0 ? acts.map(a => {
-        // Verificar si ya existe una entrega realizada en esta actividad
         const entregasActividad = db.entregas.filter(e => e.actividadId === a.id);
 
         return `
@@ -200,13 +223,13 @@
             </div>
 
             ${a.tipo === 'Tarea' ? `
-              <!-- Formulario de Entrega PDF Mejorado -->
+              <!-- Formulario de Subida PDF -->
               <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                   <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
                     <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-600"></i> Entrega de Tarea (Formato PDF)
                   </span>
-                  <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded">PDF Máx 10MB</span>
+                  <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">Curso Verificado</span>
                 </div>
 
                 <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}')" class="space-y-3">
@@ -231,10 +254,10 @@
                   </button>
                 </form>
 
-                <!-- Historial / Lista de Entregas Registradas en la Actividad -->
+                <!-- Tareas ya enviadas -->
                 ${entregasActividad.length > 0 ? `
                   <div class="mt-4 pt-3 border-t border-slate-100">
-                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Entregas enviadas recientemente:</span>
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Entregas enviadas en este curso:</span>
                     <div class="space-y-1.5">
                       ${entregasActividad.map(e => `
                         <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
@@ -249,11 +272,8 @@
                 ` : ''}
               </div>
             ` : `
-              <div class="flex items-center gap-2">
-                <input type="password" id="key-input-${a.id}" placeholder="Clave..." class="px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-indigo-500 w-32">
-                <button onclick="validateKey('${a.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <i data-lucide="key" class="w-3.5 h-3.5"></i> Rendir
-                </button>
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600">
+                Esta actividad es una evaluación en línea. Haz clic en rendir para comenzar.
               </div>
             `}
           </div>
@@ -275,7 +295,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Título de la Actividad</label>
-              <input type="text" id="new-act-title" placeholder="Ej: Deber 2: Circuitos Serie" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
+              <input type="text" id="new-act-title" placeholder="Ej: Deber 2: Mecanismos Serie" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Instrucciones</label>
@@ -292,7 +312,7 @@
 
       document.getElementById('main-content').innerHTML = `
         <button onclick="${currentRole === 'docente' ? 'renderDocenteView()' : 'renderEstudianteView()'}; lucide.createIcons();" class="mb-4 flex items-center gap-1.5 text-xs text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel principal
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del curso y volver al catálogo
         </button>
 
         <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
@@ -302,8 +322,8 @@
               <h2 class="text-2xl font-bold text-slate-900 mt-2">${curso.nombre}</h2>
               <p class="text-slate-500 text-sm">${curso.nivel}</p>
             </div>
-            <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
-              <i data-lucide="lock" class="w-3 h-3"></i> Clave Examen: ${curso.clave}
+            <span class="font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
+              <i data-lucide="unlock" class="w-3.5 h-3.5 text-emerald-600"></i> Acceso Concedido
             </span>
           </div>
 
@@ -311,7 +331,7 @@
 
           <div>
             <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-              <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i> Tareas y Pruebas del Curso
+              <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i> Tareas y Evaluaciones de este Curso
             </h3>
             <div class="space-y-4">
               ${actsHTML}
@@ -322,7 +342,6 @@
       lucide.createIcons();
     }
 
-    // Nombre de archivo en tiempo real
     function handleFileSelect(actId) {
       const fileInput = document.getElementById(`student-file-${actId}`);
       const label = document.getElementById(`file-label-${actId}`);
@@ -332,7 +351,6 @@
       }
     }
 
-    // Guardar Entrega del Estudiante con persistencia
     function submitHomework(event, actId, cursoId) {
       event.preventDefault();
       const studentName = document.getElementById(`student-name-${actId}`).value.trim();
@@ -344,9 +362,8 @@
       }
 
       const file = fileInput.files[0];
-      
-      // Registrar nueva entrega en base de datos local
-      const nuevaEntrega = {
+
+      db.entregas.push({
         id: 'ent_' + Date.now(),
         actividadId: actId,
         cursoId: cursoId,
@@ -354,12 +371,10 @@
         archivoNombre: file.name,
         fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
         nota: 0.00
-      };
+      });
 
-      db.entregas.push(nuevaEntrega);
       saveData();
-
-      alert(`¡Éxito! Tarea subida por "${studentName}". Se ha registrado correctamente en la plataforma del docente.`);
+      alert(`¡Éxito! Tarea de "${studentName}" registrada en este curso.`);
       openCourse(cursoId);
     }
 
@@ -383,20 +398,10 @@
       openCourse(cursoId);
     }
 
-    function validateKey(evId, correctKey) {
-      const input = document.getElementById(`key-input-${evId}`);
-      if (input && input.value === correctKey) {
-        alert("¡Contraseña Correcta! Accediendo a la prueba interactiva...");
-      } else {
-        alert("Contraseña incorrecta.");
-      }
-    }
-
     // ----------------------------------------------------
     // VISTA DOCENTE Y CENTRO DE RECEPCIÓN PDF CLASIFICADO
     // ----------------------------------------------------
     function renderDocenteView() {
-      // 1. Render de Tabla de Cursos
       const cursosTableRows = db.cursos.map(c => `
         <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
           <td class="py-2.5 px-3 font-bold text-slate-900">${c.nombre}</td>
@@ -404,7 +409,7 @@
           <td class="py-2.5 px-3 font-semibold text-indigo-600">${c.asignatura}</td>
           <td class="py-2.5 px-3">
             <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
-              <i data-lucide="lock" class="w-3 h-3"></i> ${c.clave}
+              <i data-lucide="key" class="w-3 h-3 text-amber-600"></i> ${c.clave}
             </span>
           </td>
           <td class="py-2.5 px-3 flex items-center gap-2">
@@ -412,7 +417,7 @@
               <i data-lucide="edit-3" class="w-3 h-3"></i> Tareas
             </button>
             <button onclick="changeKey('${c.id}')" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-2 py-1 rounded-lg transition-colors">
-              Clave
+              Cambiar Clave
             </button>
             <button onclick="deleteCourse('${c.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold px-2 py-1 rounded-lg transition-colors" title="Eliminar Curso">
               <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -421,14 +426,12 @@
         </tr>
       `).join('');
 
-      // 2. Clasificación de Entregas PDF por Curso, Año y Orden Alfabético (A-Z)
       let entregasClasificadasHTML = '';
 
       db.cursos.forEach(curso => {
         let entregasCurso = db.entregas.filter(e => e.cursoId === curso.id);
 
         if (entregasCurso.length > 0) {
-          // ORDEN ALFABÉTICO por estudiante
           entregasCurso.sort((a, b) => a.estudiante.localeCompare(b.estudiante));
 
           const filasEntregas = entregasCurso.map(e => {
@@ -528,7 +531,7 @@
               <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Examen</label>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Matriculación</label>
               <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div class="flex items-end">
@@ -553,7 +556,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i> Catálogo de Asignaturas (${db.cursos.length})
+              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i> Catálogo de Asignaturas y Claves (${db.cursos.length})
             </h2>
           </div>
           <div class="overflow-x-auto">
@@ -563,7 +566,7 @@
                   <th class="py-2.5 px-3">Curso</th>
                   <th class="py-2.5 px-3">Nivel / Año</th>
                   <th class="py-2.5 px-3">Asignatura</th>
-                  <th class="py-2.5 px-3">Clave Examen</th>
+                  <th class="py-2.5 px-3">Clave Requerida</th>
                   <th class="py-2.5 px-3">Acciones</th>
                 </tr>
               </thead>
@@ -576,7 +579,6 @@
       `;
     }
 
-    // Calificar Tarea
     function gradeAssignment(entregaId) {
       const entrega = db.entregas.find(e => e.id === entregaId);
       const val = prompt(`Ingresa la nota sobre 10 para ${entrega.estudiante}:`, entrega.nota || 10);
@@ -605,7 +607,7 @@
       });
 
       saveData();
-      alert(`Curso "${name}" publicado exitosamente.`);
+      alert(`Curso "${name}" publicado exitosamente con clave "${key}".`);
       renderDocenteView();
       lucide.createIcons();
     }
@@ -624,7 +626,7 @@
 
     function changeKey(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
-      const newKey = prompt(`Nueva clave para "${curso.nombre}":`, curso.clave);
+      const newKey = prompt(`Nueva clave de acceso para "${curso.nombre}":`, curso.clave);
       if (newKey && newKey.trim() !== '') {
         curso.clave = newKey.trim();
         saveData();
