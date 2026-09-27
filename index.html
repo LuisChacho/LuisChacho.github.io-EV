@@ -1,887 +1,487 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Campus Virtual EVA - Sistema de Aprendizaje</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  
-  <!-- SDKs Oficiales de Firebase (Sincronización Global en Tiempo Real) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Evaluación - Plataforma EV</title>
+
+    <!-- Firebase App (Base CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        h1 { font-size: 1.5rem; color: var(--primary); }
+        h2 { font-size: 1.25rem; margin-bottom: 16px; }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-secondary { background-color: var(--text-muted); }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .grid-courses {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-closed { background-color: #fee2e2; color: #991b1b; }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th { background-color: #f1f5f9; }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+    </style>
 </head>
-<body id="app-body" class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+<body>
 
-  <!-- Header Superior -->
-  <header id="app-header" class="bg-indigo-900 text-white shadow-md py-3.5 px-6 flex justify-between items-center sticky top-0 z-50 transition-colors duration-500">
-    <div class="flex items-center gap-3">
-      <div id="app-logo-bg" class="bg-indigo-700 p-2 rounded-lg text-indigo-200 transition-colors duration-500">
-        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
-      </div>
-      <div>
-        <span class="text-xl font-bold tracking-wide block leading-none">Campus Virtual EVA</span>
-        <span id="app-header-sub" class="text-xs text-indigo-300 transition-colors duration-500">Plataforma de Aprendizaje y Gestión Académica</span>
-      </div>
-    </div>
-    
-    <!-- Selector de Rol -->
-    <div class="flex items-center gap-4 text-sm font-medium">
-      <div id="role-selector-container" class="bg-indigo-800/80 p-1 rounded-lg border border-indigo-700 flex text-xs">
-        <button id="btn-role-student" onclick="switchRole('estudiante')" class="px-3 py-1.5 rounded-md font-semibold transition-all bg-indigo-600 text-white shadow">
-          Vista Estudiante
-        </button>
-        <button id="btn-role-teacher" onclick="switchRole('docente')" class="px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white flex items-center gap-1">
-          <i data-lucide="lock" class="w-3 h-3"></i> Vista Docente
-        </button>
-      </div>
-      <div id="user-avatar-container" class="hidden md:flex items-center gap-2 border-l border-indigo-700 pl-4">
-        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs" id="user-avatar">
-          E
-        </div>
-        <span id="user-name-display" class="text-sm">Estudiante</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Contenido Principal -->
-  <main id="main-content" class="flex-1 p-6 max-w-7xl mx-auto w-full">
-    <!-- Carga dinámica -->
-  </main>
-
-  <!-- Modal Visor de PDF -->
-  <div id="pdf-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex-col justify-center items-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-300">
-      <div id="pdf-modal-header" class="bg-indigo-900 text-white px-5 py-3 flex justify-between items-center transition-colors duration-500">
-        <div class="flex items-center gap-2">
-          <i data-lucide="file-text" class="w-5 h-5 text-indigo-300"></i>
-          <div>
-            <h3 id="pdf-modal-title" class="font-bold text-sm leading-none">Vista Previa del Documento PDF</h3>
-            <span id="pdf-modal-subtitle" class="text-xs text-indigo-200">Revisión de Tarea del Estudiante</span>
-          </div>
-        </div>
-        <button onclick="closePdfModal()" class="text-indigo-200 hover:text-white p-1.5 rounded-lg transition-colors">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="flex-1 bg-slate-200 p-2 relative flex flex-col justify-center items-center">
-        <iframe id="pdf-frame" class="w-full h-full rounded-lg border border-slate-300 shadow-inner bg-white" src="about:blank"></iframe>
-      </div>
-      <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-between items-center text-xs">
-        <span class="text-slate-500 font-medium flex items-center gap-1">
-          <i data-lucide="info" class="w-4 h-4 text-indigo-600"></i> Vista previa generada dinámicamente desde el servidor remoto.
-        </span>
-        <button onclick="closePdfModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-lg transition-colors">
-          Cerrar Visor
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // =========================================================================
-    // CONFIGURACIÓN DE FIREBASE (Reemplaza con los datos de tu consola Firebase)
-    // =========================================================================
-    const firebaseConfig = {
-      apiKey: "AIzaSyYourApiKeyHere...",
-      authDomain: "tu-proyecto.firebaseapp.com",
-      databaseURL: "https://tu-proyecto-default-rtdb.firebaseio.com",
-      projectId: "tu-proyecto",
-      storageBucket: "tu-proyecto.appspot.com",
-      messagingSenderId: "1234567890",
-      appId: "1:1234567890:web:abcdef123456"
-    };
-
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    // Paletas de Color Configurables
-    const themePalettes = {
-      indigo: {
-        headerBg: 'bg-indigo-900',
-        headerSub: 'text-indigo-300',
-        logoBg: 'bg-indigo-700',
-        accentBg: 'bg-indigo-600',
-        accentHover: 'hover:bg-indigo-700',
-        accentText: 'text-indigo-600',
-        accentLightBg: 'bg-indigo-50',
-        borderAccent: 'border-indigo-200'
-      },
-      emerald: {
-        headerBg: 'bg-emerald-900',
-        headerSub: 'text-emerald-300',
-        logoBg: 'bg-emerald-700',
-        accentBg: 'bg-emerald-600',
-        accentHover: 'hover:bg-emerald-700',
-        accentText: 'text-emerald-600',
-        accentLightBg: 'bg-emerald-50',
-        borderAccent: 'border-emerald-200'
-      },
-      violet: {
-        headerBg: 'bg-violet-900',
-        headerSub: 'text-violet-300',
-        logoBg: 'bg-violet-700',
-        accentBg: 'bg-violet-600',
-        accentHover: 'hover:bg-violet-700',
-        accentText: 'text-violet-600',
-        accentLightBg: 'bg-violet-50',
-        borderAccent: 'border-violet-200'
-      },
-      cobalt: {
-        headerBg: 'bg-slate-900',
-        headerSub: 'text-cyan-400',
-        logoBg: 'bg-cyan-700',
-        accentBg: 'bg-cyan-600',
-        accentHover: 'hover:bg-cyan-700',
-        accentText: 'text-cyan-600',
-        accentLightBg: 'bg-cyan-50',
-        borderAccent: 'border-cyan-200'
-      }
-    };
-
-    let currentTheme = 'indigo';
-    let currentRole = 'estudiante'; 
-    let adminPassword = "Luis0316"; 
-
-    // Cursos predeterminados
-    const defaultCursos = [
-      { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026' },
-      { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026' },
-      { id: 'rob_2egb', nombre: 'Robótica Inicial - Mecanismos Básicos', asignatura: 'Robótica', nivel: '2º EGB', clave: 'ROB2EGB' },
-      { id: 'rob_3egb', nombre: 'Robótica Educativa - Engranajes y Palancas', asignatura: 'Robótica', nivel: '3º EGB', clave: 'ROB3EGB' },
-      { id: 'rob_4egb', nombre: 'Robótica Educativa - Circuitos Básicos', asignatura: 'Robótica', nivel: '4º EGB', clave: 'ROB4EGB' },
-      { id: 'rob_5egb', nombre: 'Robótica y Autómatas I', asignatura: 'Robótica', nivel: '5º EGB', clave: 'ROB5EGB' },
-      { id: 'rob_6egb', nombre: 'Robótica y Sensórica I', asignatura: 'Robótica', nivel: '6º EGB', clave: 'ROB6EGB' },
-      { id: 'rob_7egb', nombre: 'Robótica y Sensórica II', asignatura: 'Robótica', nivel: '7º EGB', clave: 'ROB7EGB' },
-      { id: 'rob_8egb', nombre: 'Programación de Bloques y Algoritmos', asignatura: 'Robótica', nivel: '8º EGB', clave: 'ROB8EGB' },
-      { id: 'rob_9egb', nombre: 'Electrónica y Microcontroladores I', asignatura: 'Robótica', nivel: '9º EGB', clave: 'ROB9EGB' },
-      { id: 'rob_10egb', nombre: 'Electrónica y Microcontroladores II', asignatura: 'Robótica', nivel: '10º EGB', clave: 'ROB10EGB' },
-      { id: 'rob_1bgu', nombre: 'Robótica Aplicada - Micro:bit y Arduino', asignatura: 'Robótica', nivel: '1º BGU', clave: 'ROB1BGU' },
-      { id: 'rob_2bgu', nombre: 'Robótica Avanzada - ESP32 y Domótica', asignatura: 'Robótica', nivel: '2º BGU', clave: 'ROB2BGU' },
-      { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU' }
-    ];
-
-    const defaultActividades = [
-      { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', fechaLimite: '2026-10-15', tiempo: 30 },
-      { id: 'act2', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Deber 1: Diagrama de Conexiones ESP32', detalle: 'Subir esquemático en formato PDF con la guía de puertos asignada.', fechaLimite: '2026-10-10', tiempo: 0 },
-      { id: 'act3', cursoId: 'rob_5egb', tipo: 'Tarea', titulo: 'Deber 1: Diseño de Mecanismo de Transmisión', detalle: 'Adjuntar ficha de trabajo en PDF.', fechaLimite: '2026-10-05', tiempo: 0 }
-    ];
-
-    const defaultEntregas = [
-      { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', archivoData: '', fecha: '2026-09-25 14:30', nota: 10.00 },
-      { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', archivoData: '', fecha: '2026-09-25 10:15', nota: 9.50 }
-    ];
-
-    let db = {
-      cursos: defaultCursos,
-      actividades: defaultActividades,
-      entregas: defaultEntregas
-    };
-
-    // Escuchador Global de Cambios en Tiempo Real desde Firebase
-    database.ref('eva_system').on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        if (data.theme && data.theme !== currentTheme) {
-          applyTheme(data.theme);
-        }
-        if (data.adminPassword) {
-          adminPassword = data.adminPassword;
-        }
-        if (data.cursos) db.cursos = data.cursos;
-        if (data.actividades) db.actividades = data.actividades;
-        if (data.entregas) db.entregas = data.entregas;
-
-        // Re-renderizado reactivo e instantáneo
-        if (currentRole === 'docente') renderDocenteView();
-        else renderEstudianteView();
-        lucide.createIcons();
-      } else {
-        // Inicializar datos en la nube en el primer despliegue
-        syncToCloud();
-      }
-    });
-
-    function syncToCloud() {
-      database.ref('eva_system').set({
-        theme: currentTheme,
-        adminPassword: adminPassword,
-        cursos: db.cursos,
-        actividades: db.actividades,
-        entregas: db.entregas
-      });
-    }
-
-    function applyTheme(themeKey) {
-      currentTheme = themeKey;
-      const palette = themePalettes[themeKey] || themePalettes.indigo;
-      
-      const header = document.getElementById('app-header');
-      const headerSub = document.getElementById('app-header-sub');
-      const logoBg = document.getElementById('app-logo-bg');
-      const pdfHeader = document.getElementById('pdf-modal-header');
-
-      header.className = `${palette.headerBg} text-white shadow-md py-3.5 px-6 flex justify-between items-center sticky top-0 z-50 transition-colors duration-500`;
-      headerSub.className = `text-xs ${palette.headerSub} transition-colors duration-500`;
-      logoBg.className = `${palette.logoBg} p-2 rounded-lg text-indigo-200 transition-colors duration-500`;
-      pdfHeader.className = `${palette.headerBg} text-white px-5 py-3 flex justify-between items-center transition-colors duration-500`;
-    }
-
-    function setGlobalTheme(themeKey) {
-      applyTheme(themeKey);
-      syncToCloud();
-    }
-
-    function switchRole(role) {
-      if (role === 'docente') {
-        const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
-        if (passInput === null) return;
-
-        if (passInput.trim() !== adminPassword.trim()) {
-          alert("❌ Contraseña incorrecta. Acceso denegado.");
-          return;
-        }
-      }
-
-      currentRole = role;
-      const btnStudent = document.getElementById('btn-role-student');
-      const btnTeacher = document.getElementById('btn-role-teacher');
-      const avatar = document.getElementById('user-avatar');
-      const name = document.getElementById('user-name-display');
-      const palette = themePalettes[currentTheme] || themePalettes.indigo;
-
-      if (role === 'estudiante') {
-        btnStudent.className = `px-3 py-1.5 rounded-md font-semibold transition-all ${palette.accentBg} text-white shadow`;
-        btnTeacher.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white flex items-center gap-1";
-        avatar.innerText = "E";
-        name.innerText = "Estudiante";
-        renderEstudianteView();
-      } else {
-        btnTeacher.className = `px-3 py-1.5 rounded-md font-semibold transition-all ${palette.accentBg} text-white shadow flex items-center gap-1`;
-        btnStudent.className = "px-3 py-1.5 rounded-md font-semibold transition-all text-indigo-200 hover:text-white";
-        avatar.innerText = "D";
-        name.innerText = "Docente Administrador";
-        renderDocenteView();
-      }
-      lucide.createIcons();
-    }
-
-    function changeAdminPassword() {
-      const actual = prompt("Seguridad Docente:\n\nIngresa la contraseña ACTUAL del docente:");
-      if (actual === null) return;
-
-      if (actual.trim() !== adminPassword.trim()) {
-        alert("❌ La contraseña actual ingresada es incorrecta.");
-        return;
-      }
-
-      const nueva = prompt("Ingresa la NUEVA contraseña para la Vista Docente:");
-      if (!nueva || nueva.trim() === "") {
-        alert("La contraseña no puede estar vacía.");
-        return;
-      }
-
-      const confirmacion = prompt("Confirma la NUEVA contraseña:");
-      if (nueva.trim() === confirmacion.trim()) {
-        adminPassword = nueva.trim();
-        syncToCloud();
-        alert("¡Contraseña del docente actualizada con éxito en todos los dispositivos!");
-      } else {
-        alert("❌ Las contraseñas no coinciden. No se realizaron cambios.");
-      }
-    }
-
-    function accessCourse(cursoId) {
-      const curso = db.cursos.find(c => c.id === cursoId);
-      if (currentRole === 'docente') {
-        openCourse(cursoId);
-        return;
-      }
-
-      const userKey = prompt(`🔒 CURSO CON ACCESO RESTRINGIDO\n\nAsignatura: ${curso.nombre} (${curso.nivel})\n\nPor favor, ingresa la clave del curso proporcionada por tu docente:`);
-      if (userKey === null) return;
-
-      if (userKey.trim() === curso.clave) {
-        openCourse(cursoId);
-      } else {
-        alert("❌ Clave incorrecta. No tienes permiso para acceder a este curso.");
-      }
-    }
-
-    // ----------------------------------------------------
-    // VISTA ESTUDIANTE
-    // ----------------------------------------------------
-    function renderEstudianteView() {
-      const palette = themePalettes[currentTheme] || themePalettes.indigo;
-
-      const cursosCards = db.cursos.map(c => `
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all flex flex-col">
-          <div class="${palette.accentBg} h-2 transition-colors duration-500"></div>
-          <div class="p-5 flex-1 flex flex-col justify-between">
+    <div class="container">
+        <header>
+            <h1>Plataforma EV</h1>
             <div>
-              <div class="flex justify-between items-start mb-2">
-                <span class="text-xs font-bold uppercase tracking-wider ${palette.accentText} ${palette.accentLightBg} px-2.5 py-1 rounded-md transition-colors duration-500">${c.asignatura}</span>
-                <span class="text-xs font-semibold text-slate-400">${c.nivel}</span>
-              </div>
-              <h3 class="text-base font-bold text-slate-900 mt-1">${c.nombre}</h3>
-              <p class="text-slate-500 text-xs mt-1.5">Requiere clave de matriculación para ingresar y subir archivos.</p>
+                <button id="btnRole" class="btn btn-secondary" onclick="toggleRole()">Modo Docente</button>
             </div>
-            
-            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-500"></i> Protegido
-              </span>
-              <button onclick="accessCourse('${c.id}')" class="${palette.accentBg} ${palette.accentHover} text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-                <i data-lucide="key" class="w-3.5 h-3.5"></i> Ingresar al Curso
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join('');
+        </header>
 
-      document.getElementById('main-content').innerHTML = `
-        <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
-          <div>
-            <h1 class="text-2xl font-bold text-slate-900">Catálogo de Cursos y Asignaturas</h1>
-            <p class="text-slate-500 text-sm">Selecciona tu materia e ingresa tu clave para enviar tus deberes en formato PDF.</p>
-          </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${palette.accentLightBg} ${palette.accentText} border ${palette.borderAccent} self-start transition-colors duration-500">
-            <i data-lucide="wifi" class="w-4 h-4 text-emerald-600"></i> Sincronización Global Activa
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          ${cursosCards}
-        </div>
-      `;
-    }
-
-    // ----------------------------------------------------
-    // DENTRO DEL CURSO DESBLOQUEADO
-    // ----------------------------------------------------
-    function openCourse(cursoId) {
-      const palette = themePalettes[currentTheme] || themePalettes.indigo;
-      const curso = db.cursos.find(c => c.id === cursoId);
-      const acts = db.actividades.filter(a => a.cursoId === cursoId);
-
-      const actsHTML = acts.length > 0 ? acts.map(a => {
-        const entregasActividad = db.entregas.filter(e => e.actividadId === a.id);
-        const hoy = new Date().toISOString().split('T')[0];
-        const estaVencida = a.fechaLimite && a.fechaLimite < hoy;
-
-        return `
-          <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col gap-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
-              <div>
-                <div class="flex items-center gap-2 mb-1 flex-wrap">
-                  <span class="text-xs font-bold px-2.5 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
-                    ${a.tipo}
-                  </span>
-                  ${a.fechaLimite ? `
-                    <span class="text-xs font-semibold px-2.5 py-0.5 rounded flex items-center gap-1 ${estaVencida ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">
-                      <i data-lucide="calendar" class="w-3 h-3"></i> Plazo: ${a.fechaLimite}${estaVencida ? '(Vencido)' : ''}
-                    </span>
-                  ` : ''}
-                  ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
-                </div>
-                <h4 class="font-bold text-slate-900 text-base">${a.titulo}</h4>
-                <p class="text-xs text-slate-600 mt-0.5">${a.detalle}</p>
-              </div>
-
-              ${currentRole === 'docente' ? `
-                <button onclick="extendDeadline('${a.id}', '${curso.id}')" class="text-xs bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 self-start">
-                  <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-amber-600"></i> Aplazar / Cambiar Fecha
-                </button>
-              ` : ''}
+        <!-- VISTA ESTUDIANTE -->
+        <section id="viewStudent" class="view active">
+            <h2>Seleccione su Curso</h2>
+            <div id="studentCourseList" class="grid-courses">
+                <p>Cargando cursos...</p>
             </div>
 
-            ${a.tipo === 'Tarea' ? `
-              <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <i data-lucide="upload-cloud" class="w-4 h-4 ${palette.accentText}"></i> Entrega de Tarea (Formato PDF)
-                  </span>
-                  <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">Sincronizado</span>
-                </div>
-
-                <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}')" class="space-y-3">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos y Nombres del Estudiante:</label>
-                    <input type="text" id="student-name-${a.id}" placeholder="Ej: Pérez Juan" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
-                  </div>
-
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Seleccionar Documento PDF:</label>
-                    <div class="relative border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50/50 rounded-lg p-3 text-center transition-colors">
-                      <input type="file" id="student-file-${a.id}" accept=".pdf" required onchange="handleFileSelect('${a.id}')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                      <div class="flex flex-col items-center justify-center gap-1">
-                        <i data-lucide="file-up" class="w-6 h-6 ${palette.accentText}"></i>
-                        <span id="file-label-${a.id}" class="text-xs font-medium text-slate-600">Haz clic aquí para adjuntar tu archivo PDF</span>
-                      </div>
+            <div id="uploadSection" style="display: none; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
+                <h3 id="selectedCourseTitle">Cargar Evaluación</h3>
+                <form id="submissionForm" style="margin-top: 16px;">
+                    <div class="form-group">
+                        <label>Nombre Completo del Estudiante:</label>
+                        <input type="text" id="studentName" required placeholder="Ej: Juan Pérez">
                     </div>
-                  </div>
-
-                  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
-                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Subir y Registrar Tarea
-                  </button>
+                    <div class="form-group">
+                        <label>Archivo PDF de la Evaluación:</label>
+                        <input type="file" id="studentFile" accept=".pdf" required>
+                    </div>
+                    <button type="submit" class="btn">Enviar Evaluación</button>
                 </form>
-
-                ${entregasActividad.length > 0 ? `
-                  <div class="mt-4 pt-3 border-t border-slate-100">
-                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Entregas enviadas en este curso:</span>
-                    <div class="space-y-1.5">
-                      ${entregasActividad.map(e => `
-                        <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
-                          <span class="font-medium text-slate-800">${e.estudiante}</span>
-                          <div class="flex items-center gap-2">
-                            <button onclick="previewPDF('${e.id}')" class="text-rose-700 hover:text-rose-900 font-semibold flex items-center gap-1 hover:underline">
-                              <i data-lucide="file-text" class="w-3 h-3"></i> ${e.archivoNombre}
-                            </button>
-                            ${currentRole === 'docente' ? `
-                              <button onclick="deleteSubmission('${e.id}', '${curso.id}')" class="text-rose-600 hover:text-rose-800 p-1" title="Eliminar Deber">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                              </button>
-                            ` : ''}
-                          </div>
-                        </div>
-                      `).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            ` : `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600">
-                Esta actividad es una evaluación en línea. Haz clic en rendir para comenzar.
-              </div>
-            `}
-          </div>
-        `;
-      }).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o evaluaciones asignadas en este momento.</p>';
-
-      document.getElementById('main-content').innerHTML = `
-        <button onclick="${currentRole === 'docente' ? 'renderDocenteView()' : 'renderEstudianteView()'}; lucide.createIcons();" class="mb-4 flex items-center gap-1.5 text-xs ${palette.accentText} font-semibold hover:underline transition-colors">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del curso y volver al catálogo
-        </button>
-
-        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
-          <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-start">
-            <div>
-              <span class="text-xs font-bold uppercase ${palette.accentText} ${palette.accentLightBg} px-2.5 py-1 rounded-md transition-colors duration-500">${curso.asignatura}</span>
-              <h2 class="text-2xl font-bold text-slate-900 mt-2">${curso.nombre}</h2>
-              <p class="text-slate-500 text-sm">${curso.nivel}</p>
             </div>
-            <span class="font-mono bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
-              <i data-lucide="unlock" class="w-3.5 h-3.5 text-emerald-600"></i> Acceso Concedido
-            </span>
-          </div>
+        </section>
 
-          <div>
-            <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-              <i data-lucide="file-text" class="w-4 h-4 ${palette.accentText}"></i> Tareas y Evaluaciones de este Curso
-            </h3>
-            <div class="space-y-4">
-              ${actsHTML}
+        <!-- VISTA DOCENTE -->
+        <section id="viewTeacher" class="view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2>Panel de Administración - Cursos</h2>
+                <button class="btn" onclick="openCreateCourseModal()">+ Crear Curso</button>
             </div>
-          </div>
+
+            <div id="teacherCourseList" class="grid-courses"></div>
+
+            <div id="submissionsSection" style="display: none; margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
+                <h3 id="courseSubmissionsTitle">Entregas de Evaluación</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Fecha / Hora</th>
+                                <th>Archivo PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsTableBody">
+                            <tr><td colspan="3">Sin entregas.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL AUTENTICACIÓN DOCENTE -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h3>Acceso Docente</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Clave por defecto: admin123</p>
+            <div class="form-group">
+                <input type="password" id="teacherPass" placeholder="Ingrese la contraseña">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeAuthModal()">Cancelar</button>
+                <button class="btn" onclick="verifyTeacher()">Ingresar</button>
+            </div>
         </div>
-      `;
-      lucide.createIcons();
-    }
+    </div>
 
-    function previewPDF(entregaId) {
-      const entrega = db.entregas.find(e => e.id === entregaId);
-      if (!entrega) return;
+    <!-- MODAL CREAR CURSO -->
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <h3>Nuevo Curso / Evaluación</h3>
+            <div class="form-group" style="margin-top: 12px;">
+                <label>Nombre del Curso / Módulo:</label>
+                <input type="text" id="newCourseName" placeholder="Ej: Matemática - BGU 1A">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeCreateCourseModal()">Cancelar</button>
+                <button class="btn" onclick="saveCourse()">Guardar</button>
+            </div>
+        </div>
+    </div>
 
-      const act = db.actividades.find(a => a.id === entrega.actividadId);
-      document.getElementById('pdf-modal-title').innerText = entrega.archivoNombre;
-      document.getElementById('pdf-modal-subtitle').innerText = `Estudiante: ${entrega.estudiante} | Tarea: ${act ? act.titulo : 'Asignación'}`;
-
-      const iframe = document.getElementById('pdf-frame');
-      if (entrega.archivoData && entrega.archivoData.startsWith('data:application/pdf')) {
-        iframe.src = entrega.archivoData;
-      } else {
-        const samplePDFData = "data:application/pdf;base64,JVBERi0xLjQKJSDi48/GCjEgMCBvYmoKPDwvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlIC9QYWdlcyAvQ291bnQgMSAvS2lkcyBbMyAwIFJdPj4KZW5kb2JqCjMgMCBvYmoKPDwvVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9SZXNvdXJjZXMgPDwvRm9udCA8PC9GMSA0IDAgUj4+Pj4gL01lZGlhQm94IFswIDAgNjEyIDc5Ml0gL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2E+PgplbmRvYmoKNSAwIG9iago8PC9MZW5ndGggOTk+PgpzdHJlYW0KQlQKL0YxIDI0IFRmCjcwIDcwMCBUZAooREVCRVIgRU5UUkVHQURPIEVOIEZPUk1BVE8gUERGKSBUagovRjEgMTIgVGYKMCAtNDAgVGQKKEVzdHVkaWFudGU6IC" + btoa(unescape(encodeURIComponent(entrega.estudiante))) + ") " + "VGoKMCAtMjAgVGQKKEFyY2hpdm86IC" + btoa(unescape(encodeURIComponent(entrega.archivoNombre))) + ") " + "VGoKMCAtMjAgVGQKKEZlY2hhOiAi" + btoa(unescape(encodeURIComponent(entrega.fecha))) + ") " + "VGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwDY2Nzc2Y24gCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAyNDIgMDAwMDAgbiAKMDAwMDAwMDI5NCAwMDAwMCBuIAp0cmFpbGVyCjw8L1NpemUgNiAvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0NDMKJSVFT0Y=";
-        iframe.src = samplePDFData;
-      }
-
-      document.getElementById('pdf-modal').classList.remove('hidden');
-      document.getElementById('pdf-modal').classList.add('flex');
-    }
-
-    function closePdfModal() {
-      const modal = document.getElementById('pdf-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      document.getElementById('pdf-frame').src = 'about:blank';
-    }
-
-    function extendDeadline(actId, cursoId) {
-      const act = db.actividades.find(a => a.id === actId);
-      const nuevaFecha = prompt(`Aplazar / Cambiar Fecha Límite de Entrega\n\nTarea: "${act.titulo}"\nFecha Actual: ${act.fechaLimite || 'Sin fecha'}\n\nIngresa la nueva fecha límite (YYYY-MM-DD):`, act.fechaLimite || '');
-
-      if (nuevaFecha !== null && nuevaFecha.trim() !== '') {
-        act.fechaLimite = nuevaFecha.trim();
-        syncToCloud();
-        alert(`¡Fecha límite aplazada con éxito al ${act.fechaLimite}!`);
-        openCourse(cursoId);
-      }
-    }
-
-    function deleteSubmission(entregaId, cursoId = null) {
-      const entrega = db.entregas.find(e => e.id === entregaId);
-      if (confirm(`¿Estás seguro de eliminar el deber entregado por "${entrega.estudiante}"?`)) {
-        db.entregas = db.entregas.filter(e => e.id !== entregaId);
-        syncToCloud();
-        alert("Deber eliminado correctamente.");
-        if (cursoId) {
-          openCourse(cursoId);
-        } else {
-          renderDocenteView();
-          lucide.createIcons();
-        }
-      }
-    }
-
-    function handleFileSelect(actId) {
-      const fileInput = document.getElementById(`student-file-${actId}`);
-      const label = document.getElementById(`file-label-${actId}`);
-      if (fileInput.files && fileInput.files[0]) {
-        label.innerText = "📄 PDF Seleccionado: " + fileInput.files[0].name;
-        label.classList.add("text-indigo-700", "font-bold");
-      }
-    }
-
-    function submitHomework(event, actId, cursoId) {
-      event.preventDefault();
-      
-      const studentInput = document.getElementById(`student-name-${actId}`);
-      const fileInput = document.getElementById(`student-file-${actId}`);
-
-      if (!studentInput || !studentInput.value.trim()) {
-        alert("Por favor ingresa los Apellidos y Nombres del Estudiante.");
-        return;
-      }
-
-      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        alert("Por favor selecciona un archivo PDF.");
-        return;
-      }
-
-      const studentName = studentInput.value.trim();
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        const nuevaEntrega = {
-          id: 'ent_' + Date.now(),
-          actividadId: actId,
-          cursoId: cursoId,
-          estudiante: studentName,
-          archivoNombre: file.name,
-          archivoData: e.target.result,
-          fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
-          nota: 0.00
+    <script>
+        // CONFIGURACIÓN DE FIREBASE (ev-plataforma)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAweB4tP5phoXAUN1gcuveiIF0fqEEXq0o",
+            authDomain: "ev-plataforma.firebaseapp.com",
+            databaseURL: "https://ev-plataforma-default-rtdb.firebaseio.com",
+            projectId: "ev-plataforma",
+            storageBucket: "ev-plataforma.firebasestorage.app",
+            messagingSenderId: "498688966972",
+            appId: "1:498688966972:web:587b6d2e1236224d14de39",
+            measurementId: "G-X107TNJFEW"
         };
 
-        if (!db.entregas) db.entregas = [];
-        db.entregas.push(nuevaEntrega);
-        syncToCloud();
-        
-        alert(`¡Éxito! Tarea de "${studentName}" registrada correctamente.`);
-        openCourse(cursoId);
-      };
+        // Inicializar Firebase Realtime Database
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-      reader.readAsDataURL(file);
-    }
+        // ESTADO DE LA APLICACIÓN
+        let isTeacherMode = false;
+        let selectedCourseId = null;
+        const TEACHER_PASSWORD = "admin123";
 
-    // ----------------------------------------------------
-    // VISTA DOCENTE Y PANEL DE PERSONALIZACIÓN
-    // ----------------------------------------------------
-    function renderDocenteView() {
-      const palette = themePalettes[currentTheme] || themePalettes.indigo;
+        // REFERENCIAS A CURSOS
+        const coursesRef = db.ref('courses');
 
-      const cursosTableRows = db.cursos.map(c => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
-          <td class="py-2.5 px-3 font-bold text-slate-900">${c.nombre}</td>
-          <td class="py-2.5 px-3 text-slate-600">${c.nivel}</td>
-          <td class="py-2.5 px-3 font-semibold ${palette.accentText}">${c.asignatura}</td>
-          <td class="py-2.5 px-3">
-            <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
-              <i data-lucide="key" class="w-3 h-3 text-amber-600"></i> ${c.clave}
-            </span>
-          </td>
-          <td class="py-2.5 px-3 flex items-center gap-2">
-            <button onclick="openCourse('${c.id}')" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-semibold px-2 py-1 rounded-lg transition-colors flex items-center gap-1">
-              <i data-lucide="edit-3" class="w-3 h-3"></i> Tareas
-            </button>
-            <button onclick="changeKey('${c.id}')" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-2 py-1 rounded-lg transition-colors">
-              Cambiar Clave
-            </button>
-            <button onclick="deleteCourse('${c.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold px-2 py-1 rounded-lg transition-colors" title="Eliminar Curso">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>
-          </td>
-        </tr>
-      `).join('');
+        // ESCUCHA EN TIEMPO REAL
+        coursesRef.on('value', (snapshot) => {
+            const courses = snapshot.val() || {};
+            renderStudentCourses(courses);
+            if (isTeacherMode) {
+                renderTeacherCourses(courses);
+            }
+        });
 
-      let entregasClasificadasHTML = '';
-
-      db.cursos.forEach(curso => {
-        let entregasCurso = db.entregas ? db.entregas.filter(e => e.cursoId === curso.id) : [];
-
-        if (entregasCurso.length > 0) {
-          entregasCurso.sort((a, b) => a.estudiante.localeCompare(b.estudiante));
-
-          const filasEntregas = entregasCurso.map(e => {
-            const act = db.actividades.find(a => a.id === e.actividadId);
-            return `
-              <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td class="py-2.5 px-4 font-bold text-slate-900 flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full ${palette.accentLightBg} ${palette.accentText} flex items-center justify-center text-[10px] font-black">
-                    ${e.estudiante.charAt(0)}
-                  </div>
-                  ${e.estudiante}
-                </td>
-                <td class="py-2.5 px-4 text-slate-700 font-medium">${act ? act.titulo : 'Tarea'}</td>
-                <td class="py-2.5 px-4">
-                  <button onclick="previewPDF('${e.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-100 transition-colors cursor-pointer">
-                    <i data-lucide="eye" class="w-3.5 h-3.5 text-rose-600"></i> Ver PDF: ${e.archivoNombre}
-                  </button>
-                </td>
-                <td class="py-2.5 px-4 text-slate-500 text-xs">${e.fecha}</td>
-                <td class="py-2.5 px-4">
-                  <button onclick="gradeAssignment('${e.id}')" class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-md font-bold transition-colors flex items-center gap-1">
-                    <i data-lucide="check-square" class="w-3 h-3 text-emerald-600"></i> ${e.nota > 0 ? e.nota.toFixed(2) + ' / 10' : 'Calificar'}
-                  </button>
-                </td>
-                <td class="py-2.5 px-4 text-center">
-                  <button onclick="deleteSubmission('${e.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 p-1.5 rounded-lg transition-colors inline-flex items-center gap-1 font-semibold">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Borrar
-                  </button>
-                </td>
-              </tr>
-            `;
-          }).join('');
-
-          entregasClasificadasHTML += `
-            <div class="mb-6 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <div class="${palette.headerBg} text-white px-4 py-3 flex justify-between items-center transition-colors duration-500">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold ${palette.logoBg} text-indigo-100 px-2.5 py-0.5 rounded-md uppercase tracking-wider">${curso.asignatura}</span>
-                  <h3 class="font-bold text-sm">${curso.nombre} - <span class="text-indigo-200 font-normal">${curso.nivel}</span></h3>
-                </div>
-                <span class="text-xs bg-black/20 text-white px-2.5 py-1 rounded-full font-semibold">
-                  ${entregasCurso.length} Tareas Recibidas (A-Z)
-                </span>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr class="bg-slate-100/80 text-slate-600 uppercase text-[10px] font-bold">
-                      <th class="py-2.5 px-4">Estudiante</th>
-                      <th class="py-2.5 px-4">Tarea Asignada</th>
-                      <th class="py-2.5 px-4">Previsualizar Documento PDF</th>
-                      <th class="py-2.5 px-4">Fecha</th>
-                      <th class="py-2.5 px-4">Calificación</th>
-                      <th class="py-2.5 px-4 text-center">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${filasEntregas}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          `;
+        // CAMBIO DE ROL
+        function toggleRole() {
+            if (!isTeacherMode) {
+                document.getElementById('authModal').classList.add('active');
+            } else {
+                isTeacherMode = false;
+                document.getElementById('btnRole').textContent = "Modo Docente";
+                document.getElementById('viewTeacher').classList.remove('active');
+                document.getElementById('viewStudent').classList.add('active');
+            }
         }
-      });
 
-      if (entregasClasificadasHTML === '') {
-        entregasClasificadasHTML = `
-          <div class="p-8 text-center bg-white rounded-xl border border-slate-200">
-            <i data-lucide="folder-open" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
-            <p class="text-slate-500 text-xs italic">Aún no hay archivos PDF enviados por los estudiantes.</p>
-          </div>
-        `;
-      }
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('teacherPass').value = '';
+        }
 
-      document.getElementById('main-content').innerHTML = `
-        <div class="mb-6 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-          <div>
-            <h1 class="text-2xl font-bold text-slate-900">Panel Docente Administrador</h1>
-            <p class="text-slate-500 text-sm">Gestión académica, personalización de entorno y tareas recibidas en vivo.</p>
-          </div>
-          <div class="flex items-center gap-2 self-start">
-            <button onclick="changeAdminPassword()" class="bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-100 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-              <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i> Cambiar Clave Global
-            </button>
-            <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5">
-              <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir
-            </button>
-          </div>
-        </div>
+        function verifyTeacher() {
+            const pass = document.getElementById('teacherPass').value;
+            if (pass === TEACHER_PASSWORD) {
+                isTeacherMode = true;
+                document.getElementById('btnRole').textContent = "Modo Estudiante";
+                document.getElementById('viewStudent').classList.remove('active');
+                document.getElementById('viewTeacher').classList.add('active');
+                closeAuthModal();
+                coursesRef.once('value', snapshot => renderTeacherCourses(snapshot.val() || {}));
+            } else {
+                alert("Contraseña incorrecta");
+            }
+        }
 
-        <!-- CONTROL DE PERSONALIZACIÓN EN TIEMPO REAL -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8">
-          <h2 class="font-bold text-slate-800 text-sm mb-1 flex items-center gap-2">
-            <i data-lucide="palette" class="w-4 h-4 ${palette.accentText}"></i> Personalización de Apariencia en Tiempo Real
-          </h2>
-          <p class="text-xs text-slate-500 mb-4">El color seleccionado se actualizará <strong>inmediatamente en las pantallas de todos los estudiantes conectados</strong> sin refrescar la página.</p>
-          
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <button onclick="setGlobalTheme('indigo')" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'indigo' ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-500/20' : 'border-slate-200 hover:bg-slate-50'}">
-              <span class="w-4 h-4 rounded-full bg-indigo-900 inline-block"></span>
-              <span class="text-xs font-bold text-slate-800">Azul Índigo</span>
-            </button>
+        // RENDER CURSOS ESTUDIANTE
+        function renderStudentCourses(courses) {
+            const container = document.getElementById('studentCourseList');
+            container.innerHTML = '';
 
-            <button onclick="setGlobalTheme('emerald')" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'emerald' ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-500/20' : 'border-slate-200 hover:bg-slate-50'}">
-              <span class="w-4 h-4 rounded-full bg-emerald-900 inline-block"></span>
-              <span class="text-xs font-bold text-slate-800">Verde Esmeralda</span>
-            </button>
+            const keys = Object.keys(courses);
+            if (keys.length === 0) {
+                container.innerHTML = '<p>No hay cursos o evaluaciones disponibles por el momento.</p>';
+                return;
+            }
 
-            <button onclick="setGlobalTheme('violet')" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'violet' ? 'border-violet-600 bg-violet-50 ring-2 ring-violet-500/20' : 'border-slate-200 hover:bg-slate-50'}">
-              <span class="w-4 h-4 rounded-full bg-violet-900 inline-block"></span>
-              <span class="text-xs font-bold text-slate-800">Púrpura Violeta</span>
-            </button>
+            keys.forEach(key => {
+                const course = courses[key];
+                if (course.active) {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>${course.name}</h3>
+                        <span class="status-badge status-active">Recepción Abierta</span>
+                    `;
+                    card.onclick = () => selectCourseForStudent(key, course.name);
+                    container.appendChild(card);
+                }
+            });
+        }
 
-            <button onclick="setGlobalTheme('cobalt')" class="p-3 rounded-lg border text-left flex items-center gap-2 transition-all ${currentTheme === 'cobalt' ? 'border-cyan-600 bg-cyan-50 ring-2 ring-cyan-500/20' : 'border-slate-200 hover:bg-slate-50'}">
-              <span class="w-4 h-4 rounded-full bg-slate-900 inline-block"></span>
-              <span class="text-xs font-bold text-slate-800">Gris Cobalto</span>
-            </button>
-          </div>
-        </div>
+        // RENDER CURSOS DOCENTE
+        function renderTeacherCourses(courses) {
+            const container = document.getElementById('teacherCourseList');
+            container.innerHTML = '';
 
-        <!-- Módulo de Creación de Cursos -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8">
-          <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-4 h-4 ${palette.accentText}"></i> Registrar Nuevo Curso / Asignatura
-          </h2>
-          <form onsubmit="addNewCourse(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Curso</label>
-              <input type="text" id="new-course-name" placeholder="Ej: Robótica Educativa" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Asignatura</label>
-              <input type="text" id="new-course-subject" placeholder="Ej: Robótica" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Nivel / Subnivel / Año</label>
-              <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Matriculación</label>
-              <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1">
-            </div>
-            <div class="flex items-end">
-              <button type="submit" class="w-full ${palette.accentBg} ${palette.accentHover} text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
-                <i data-lucide="save" class="w-4 h-4"></i> Guardar Curso
-              </button>
-            </div>
-          </form>
-        </div>
+            const keys = Object.keys(courses);
+            if (keys.length === 0) {
+                container.innerHTML = '<p>No se han creado cursos.</p>';
+                return;
+            }
 
-        <!-- MÓDULO PRINCIPAL: Recepción y Clasificación de Tareas PDF -->
-        <div class="mb-8">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="folder-archive" class="w-5 h-5 ${palette.accentText}"></i> Centro de Recepción PDF Clasificado (Curso, Año y A-Z)
-            </h2>
-          </div>
-          ${entregasClasificadasHTML}
-        </div>
+            keys.forEach(key => {
+                const course = courses[key];
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${course.name}</h3>
+                    <span class="status-badge ${course.active ? 'status-active' : 'status-closed'}">
+                        ${course.active ? 'Abierto' : 'Cerrado'}
+                    </span>
+                    <div style="margin-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation()">
+                        <button class="btn btn-secondary" style="font-size: 0.8rem;" onclick="toggleCourseStatus('${key}', ${!course.active})">
+                            ${course.active ? 'Cerrar Recepción' : 'Abrir Recepción'}
+                        </button>
+                    </div>
+                `;
+                card.onclick = () => viewSubmissions(key, course.name);
+                container.appendChild(card);
+            });
+        }
 
-        <!-- Tabla: Catálogo de Cursos -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-          <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-              <i data-lucide="layout-grid" class="w-4 h-4 ${palette.accentText}"></i> Catálogo de Asignaturas y Claves (${db.cursos.length})
-            </h2>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100/70 text-slate-600 uppercase text-[10px] font-bold">
-                  <th class="py-2.5 px-3">Curso</th>
-                  <th class="py-2.5 px-3">Nivel / Año</th>
-                  <th class="py-2.5 px-3">Asignatura</th>
-                  <th class="py-2.5 px-3">Clave Requerida</th>
-                  <th class="py-2.5 px-3">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${cursosTableRows}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-    }
+        // ACCIONES DE CURSO
+        function openCreateCourseModal() {
+            document.getElementById('courseModal').classList.add('active');
+        }
 
-    function gradeAssignment(entregaId) {
-      const entrega = db.entregas.find(e => e.id === entregaId);
-      const val = prompt(`Ingresa la nota sobre 10 para ${entrega.estudiante}:`, entrega.nota || 10);
-      if (val !== null && !isNaN(val)) {
-        entrega.nota = parseFloat(val);
-        syncToCloud();
-        alert(`Nota de ${entrega.estudiante} guardada: ${entrega.nota.toFixed(2)}/10`);
-        renderDocenteView();
-        lucide.createIcons();
-      }
-    }
+        function closeCreateCourseModal() {
+            document.getElementById('courseModal').classList.remove('active');
+            document.getElementById('newCourseName').value = '';
+        }
 
-    function addNewCourse(event) {
-      event.preventDefault();
-      const name = document.getElementById('new-course-name').value.trim();
-      const subject = document.getElementById('new-course-subject').value.trim();
-      const level = document.getElementById('new-course-level').value.trim();
-      const key = document.getElementById('new-course-key').value.trim();
+        function saveCourse() {
+            const name = document.getElementById('newCourseName').value.trim();
+            if (name) {
+                const newRef = coursesRef.push();
+                newRef.set({
+                    name: name,
+                    active: true,
+                    createdAt: Date.now()
+                });
+                closeCreateCourseModal();
+            }
+        }
 
-      db.cursos.push({
-        id: 'c_' + Date.now(),
-        nombre: name,
-        asignatura: subject,
-        nivel: level,
-        clave: key
-      });
+        function toggleCourseStatus(courseId, newStatus) {
+            coursesRef.child(courseId).update({ active: newStatus });
+        }
 
-      syncToCloud();
-      alert(`Curso "${name}" publicado exitosamente con clave "${key}".`);
-      renderDocenteView();
-      lucide.createIcons();
-    }
+        // SELECCIONAR CURSO ESTUDIANTE
+        function selectCourseForStudent(courseId, courseName) {
+            selectedCourseId = courseId;
+            document.getElementById('selectedCourseTitle').textContent = `Enviar Evaluación - ${courseName}`;
+            document.getElementById('uploadSection').style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
 
-    function deleteCourse(cursoId) {
-      const curso = db.cursos.find(c => c.id === cursoId);
-      if (confirm(`¿Deseas eliminar el curso "${curso.nombre}"?`)) {
-        db.cursos = db.cursos.filter(c => c.id !== cursoId);
-        db.actividades = db.actividades.filter(a => a.cursoId !== cursoId);
-        if (db.entregas) db.entregas = db.entregas.filter(e => e.cursoId !== cursoId);
-        syncToCloud();
-        renderDocenteView();
-        lucide.createIcons();
-      }
-    }
+        // ENVÍO DE EVALUACIÓN
+        document.getElementById('submissionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('studentName').value.trim();
+            const fileInput = document.getElementById('studentFile');
+            const file = fileInput.files[0];
 
-    function changeKey(cursoId) {
-      const curso = db.cursos.find(c => c.id === cursoId);
-      const newKey = prompt(`Nueva clave de acceso para "${curso.nombre}":`, curso.clave);
-      if (newKey && newKey.trim() !== '') {
-        curso.clave = newKey.trim();
-        syncToCloud();
-        renderDocenteView();
-        lucide.createIcons();
-      }
-    }
+            if (!selectedCourseId || !name || !file) {
+                alert("Por favor complete todos los campos.");
+                return;
+            }
 
-    window.onload = () => {
-      applyTheme(currentTheme);
-      renderEstudianteView();
-      lucide.createIcons();
-    };
-  </script>
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const base64Data = evt.target.result;
+                const submissionRef = db.ref(`submissions/${selectedCourseId}`).push();
+                
+                submissionRef.set({
+                    studentName: name,
+                    fileName: file.name,
+                    fileData: base64Data,
+                    timestamp: new Date().toLocaleString()
+                }).then(() => {
+                    alert("Evaluación enviada con éxito.");
+                    document.getElementById('submissionForm').reset();
+                    document.getElementById('uploadSection').style.display = 'none';
+                }).catch(err => {
+                    alert("Error al enviar la evaluación: " + err.message);
+                });
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        // VER ENTREGAS (DOCENTE)
+        function viewSubmissions(courseId, courseName) {
+            document.getElementById('courseSubmissionsTitle').textContent = `Entregas - ${courseName}`;
+            document.getElementById('submissionsSection').style.display = 'block';
+
+            const subRef = db.ref(`submissions/${courseId}`);
+            subRef.on('value', snapshot => {
+                const submissions = snapshot.val() || {};
+                const tbody = document.getElementById('submissionsTableBody');
+                tbody.innerHTML = '';
+
+                const keys = Object.keys(submissions);
+                if (keys.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">No hay evaluaciones entregadas.</td></tr>';
+                    return;
+                }
+
+                keys.forEach(k => {
+                    const sub = submissions[k];
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${sub.studentName}</strong></td>
+                        <td>${sub.timestamp}</td>
+                        <td><a href="${sub.fileData}" download="${sub.studentName}_${sub.fileName}" class="btn" style="padding: 4px 8px; font-size: 0.8rem; text-decoration: none;">Descargar PDF</a></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
