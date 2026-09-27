@@ -48,42 +48,51 @@
   </main>
 
   <script>
-    // Estado Global de la App en Memoria
+    // Estado Global
     let currentRole = 'estudiante'; 
     const ADMIN_PASSWORD = "Luis0316"; 
     
-    // Base de Datos Dinámica
+    // Base de Datos Dinámica (Incluye Cursos de Robótica de 2º EGB a 3º BGU)
     const db = {
       cursos: [
         { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026', actividades: 4 },
         { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026', actividades: 2 },
-        { id: 'pre1', nombre: 'Razonamiento Cuantitativo', asignatura: 'Preuniversitario', nivel: 'Nivelación Intensiva', clave: 'PRE2026', actividades: 5 }
+        { id: 'pre1', nombre: 'Razonamiento Cuantitativo', asignatura: 'Preuniversitario', nivel: 'Nivelación Intensiva', clave: 'PRE2026', actividades: 5 },
+        
+        // Cursos de Robótica Educativa
+        { id: 'rob_2egb', nombre: 'Robótica Inicial - Mecanismos Básicos', asignatura: 'Robótica', nivel: '2º EGB', clave: 'ROB2EGB', actividades: 1 },
+        { id: 'rob_3egb', nombre: 'Robótica Educativa - Engranajes y Palancas', asignatura: 'Robótica', nivel: '3º EGB', clave: 'ROB3EGB', actividades: 1 },
+        { id: 'rob_4egb', nombre: 'Robótica Educativa - Circuitos Básicos', asignatura: 'Robótica', nivel: '4º EGB', clave: 'ROB4EGB', actividades: 1 },
+        { id: 'rob_5egb', nombre: 'Robótica y Automatas I', asignatura: 'Robótica', nivel: '5º EGB', clave: 'ROB5EGB', actividades: 1 },
+        { id: 'rob_6egb', nombre: 'Robótica y Sensórica I', asignatura: 'Robótica', nivel: '6º EGB', clave: 'ROB6EGB', actividades: 1 },
+        { id: 'rob_7egb', nombre: 'Robótica y Sensórica II', asignatura: 'Robótica', nivel: '7º EGB', clave: 'ROB7EGB', actividades: 1 },
+        { id: 'rob_8egb', nombre: 'Programación de Bloques y Algoritmos', asignatura: 'Robótica', nivel: '8º EGB', clave: 'ROB8EGB', actividades: 2 },
+        { id: 'rob_9egb', nombre: 'Electrónica y Microcontroladores I', asignatura: 'Robótica', nivel: '9º EGB', clave: 'ROB9EGB', actividades: 2 },
+        { id: 'rob_10egb', nombre: 'Electrónica y Microcontroladores II', asignatura: 'Robótica', nivel: '10º EGB', clave: 'ROB10EGB', actividades: 2 },
+        { id: 'rob_1bgu', nombre: 'Robótica Aplicada - Micro:bit y Arduino', asignatura: 'Robótica', nivel: '1º BGU', clave: 'ROB1BGU', actividades: 3 },
+        { id: 'rob_2bgu', nombre: 'Robótica Avanzada - Sistemas Embebidos y ESP32', asignatura: 'Robótica', nivel: '2º BGU', clave: 'ROB2BGU', actividades: 3 },
+        { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU', actividades: 3 }
       ],
-      evaluaciones: [
-        { id: 'ev1', cursoId: 'mat3', titulo: 'Evaluación: Límites e Indeterminaciones', tiempo: 30, preguntas: 10, activa: true },
-        { id: 'ev2', cursoId: 'fis2', titulo: 'Prueba: Cinemática y Dinámica', tiempo: 45, preguntas: 15, activa: true },
-        { id: 'ev3', cursoId: 'pre1', titulo: 'Simulador de Examen de Admisión', tiempo: 60, preguntas: 30, activa: false }
+      actividades: [
+        { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30, activa: true },
+        { id: 'act2', cursoId: 'fis2', tipo: 'Prueba', titulo: 'Prueba: Cinemática y Dinámica', detalle: '15 Preguntas de selección múltiple', tiempo: 45, activa: true },
+        { id: 'act3', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Taller 1: Configuración de Entorno ESP32', detalle: 'Subir reporte PDF con diagrama de circuito en Fritzing.', tiempo: 0, activa: true }
       ],
       notas: [
         { id: 1, estudiante: 'Carlos Mendoza', curso: 'Matemática Superior', nivel: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', nota: 9.50, fecha: '2026-09-25' },
-        { id: 2, estudiante: 'Ana Lucía Gómez', curso: 'Matemática Superior', nivel: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', nota: 8.00, fecha: '2026-09-25' },
-        { id: 3, estudiante: 'Mateo Ramos', curso: 'Física General', nivel: '2º BGU - Paralelo B', evaluacion: 'Cinemática y Dinámica', nota: 10.00, fecha: '2026-09-26' }
+        { id: 2, estudiante: 'Ana Lucía Gómez', curso: 'Matemática Superior', nivel: '3º BGU - Paralelo A', evaluacion: 'Límites e Indeterminaciones', nota: 8.00, fecha: '2026-09-25' }
       ]
     };
 
-    // Alternar Roles solicitando la clave SIEMPRE para el docente
+    // Alternar Roles solicitando clave
     function switchRole(role) {
       if (role === 'docente') {
         const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
-        
         if (passInput === null) return;
-
         if (passInput !== ADMIN_PASSWORD) {
           alert("Contraseña incorrecta. Acceso denegado.");
           return;
         }
-
-        alert("¡Acceso concedido! Entrando al Panel del Docente.");
       }
 
       currentRole = role;
@@ -115,22 +124,22 @@
       const cursosCards = db.cursos.map(c => `
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all flex flex-col">
           <div class="bg-indigo-600 h-2"></div>
-          <div class="p-6 flex-1 flex flex-col justify-between">
+          <div class="p-5 flex-1 flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start mb-2">
                 <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">${c.asignatura}</span>
                 <span class="text-xs font-semibold text-slate-400">${c.nivel}</span>
               </div>
-              <h3 class="text-lg font-bold text-slate-900 mt-1">${c.nombre}</h3>
-              <p class="text-slate-500 text-xs mt-2">Módulos de estudio, lecciones interactivas y material de apoyo.</p>
+              <h3 class="text-base font-bold text-slate-900 mt-1">${c.nombre}</h3>
+              <p class="text-slate-500 text-xs mt-1.5">Módulos de estudio, tareas prácticas y evaluaciones programadas.</p>
             </div>
             
-            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
               <span class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-500"></i> ${c.actividades} Módulos
+                <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-500"></i> ${db.actividades.filter(a => a.cursoId === c.id).length} Actividades
               </span>
-              <button onclick="openCourseStudent('${c.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
-                Ingresar <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              <button onclick="openCourse('${c.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1 shadow-sm">
+                Ingresar <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
               </button>
             </div>
           </div>
@@ -138,70 +147,113 @@
       `).join('');
 
       document.getElementById('main-content').innerHTML = `
-        <div class="mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
+        <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Mis Asignaturas y Cursos</h1>
-            <p class="text-slate-500 text-sm">Entorno Virtual de Aprendizaje - Selecciona tu curso asignado.</p>
+            <p class="text-slate-500 text-sm">Entorno Virtual de Aprendizaje - Explora tus asignaturas asignadas.</p>
           </div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${db.cursos.length} Cursos Disponibles
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> ${db.cursos.length} Cursos Activos
           </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           ${cursosCards}
         </div>
       `;
     }
 
-    function openCourseStudent(cursoId) {
+    // ----------------------------------------------------
+    // VISTA DENTRO DE UN CURSO (Estudiante y Docente)
+    // ----------------------------------------------------
+    function openCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
-      const evs = db.evaluaciones.filter(e => e.cursoId === cursoId);
+      const acts = db.actividades.filter(a => a.cursoId === cursoId);
 
-      const evsHTML = evs.length > 0 ? evs.map(e => `
-        <div class="bg-indigo-50/60 border border-indigo-100 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      const actsHTML = acts.length > 0 ? acts.map(a => `
+        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-xs font-bold px-2 py-0.5 rounded ${e.activa ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
-                ${e.activa ? 'Disponible' : 'Cerrada'}
+              <span class="text-xs font-bold px-2 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
+                ${a.tipo}
               </span>
-              <span class="text-xs text-slate-500 flex items-center gap-1">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${e.tiempo} minutos
-              </span>
+              ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
             </div>
-            <h4 class="font-bold text-indigo-950 text-base">${e.titulo}</h4>
-            <p class="text-xs text-slate-500 mt-0.5">${e.preguntas} Preguntas de selección múltiple</p>
+            <h4 class="font-bold text-indigo-950 text-sm sm:text-base">${a.titulo}</h4>
+            <p class="text-xs text-slate-500 mt-0.5">${a.detalle}</p>
           </div>
 
-          ${e.activa ? `
+          ${a.tipo === 'Prueba' ? `
             <div class="flex items-center gap-2">
-              <input type="password" id="key-input-${e.id}" placeholder="Contraseña de la prueba..." class="px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
-              <button onclick="validateKey('${e.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1">
-                <i data-lucide="key" class="w-4 h-4"></i> Rendir
+              <input type="password" id="key-input-${a.id}" placeholder="Clave..." class="px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-indigo-500 w-32">
+              <button onclick="validateKey('${a.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                <i data-lucide="key" class="w-3.5 h-3.5"></i> Rendir
               </button>
             </div>
-          ` : `<span class="text-xs text-slate-400 italic">No disponible actualmente</span>`}
+          ` : `
+            <button onclick="alert('Módulo de entrega de tareas habilitado.')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 self-start sm:self-center">
+              <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Entregar Tarea
+            </button>
+          `}
         </div>
-      `).join('') : '<p class="text-slate-500 text-sm">No hay evaluaciones programadas para este curso.</p>';
+      `).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o pruebas asignadas a este curso.</p>';
+
+      const teacherControls = currentRole === 'docente' ? `
+        <!-- Formulario para agregar Actividades/Pruebas -->
+        <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-5 mb-6">
+          <h3 class="font-bold text-amber-900 text-sm mb-3 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600"></i> (Panel Docente) Asignar Tarea o Prueba a este Curso
+          </h3>
+          <form onsubmit="addActivity(event, '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Actividad</label>
+              <select id="new-act-type" class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="Prueba">Prueba / Examen</option>
+                <option value="Tarea">Tarea / Taller</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Título de la Actividad</label>
+              <input type="text" id="new-act-title" placeholder="Ej: Taller 1: Ensamblado" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Detalle / Instrucciones</label>
+              <input type="text" id="new-act-detail" placeholder="Ej: Resolver guía adjunta" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <div class="flex items-end">
+              <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1">
+                <i data-lucide="save" class="w-3.5 h-3.5"></i> Publicar Actividad
+              </button>
+            </div>
+          </form>
+        </div>
+      ` : '';
 
       document.getElementById('main-content').innerHTML = `
-        <button onclick="renderEstudianteView(); lucide.createIcons();" class="mb-5 flex items-center gap-1.5 text-sm text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver a mis cursos
+        <button onclick="${currentRole === 'docente' ? 'renderDocenteView()' : 'renderEstudianteView()'}; lucide.createIcons();" class="mb-4 flex items-center gap-1.5 text-xs text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel principal
         </button>
 
         <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-6">
-          <div class="border-b border-slate-100 pb-4 mb-6">
-            <span class="text-xs font-bold uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">${curso.asignatura}</span>
-            <h2 class="text-2xl font-bold text-slate-900 mt-2">${curso.nombre}</h2>
-            <p class="text-slate-500 text-sm">${curso.nivel}</p>
+          <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-start">
+            <div>
+              <span class="text-xs font-bold uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">${curso.asignatura}</span>
+              <h2 class="text-2xl font-bold text-slate-900 mt-2">${curso.nombre}</h2>
+              <p class="text-slate-500 text-sm">${curso.nivel}</p>
+            </div>
+            <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3"></i> Clave: ${curso.clave}
+            </span>
           </div>
 
+          ${teacherControls}
+
           <div>
-            <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-              <i data-lucide="file-check" class="w-5 h-5 text-indigo-600"></i> Evaluaciones y Exámenes Activos
+            <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i> Tareas y Evaluaciones de la Asignatura
             </h3>
-            <div class="space-y-4">
-              ${evsHTML}
+            <div class="space-y-3">
+              ${actsHTML}
             </div>
           </div>
         </div>
@@ -209,17 +261,39 @@
       lucide.createIcons();
     }
 
+    // Agregar Nueva Actividad/Tarea desde la Vista Docente dentro del Curso
+    function addActivity(event, cursoId) {
+      event.preventDefault();
+      const type = document.getElementById('new-act-type').value;
+      const title = document.getElementById('new-act-title').value.trim();
+      const detail = document.getElementById('new-act-detail').value.trim();
+
+      db.actividades.push({
+        id: 'act_' + Date.now(),
+        cursoId: cursoId,
+        tipo: type,
+        titulo: title,
+        detalle: detail,
+        tiempo: type === 'Prueba' ? 30 : 0,
+        activa: true
+      });
+
+      alert(`¡${type} publicada correctamente para este curso!`);
+      openCourse(cursoId);
+    }
+
+    // Validar contraseña del examen
     function validateKey(evId, correctKey) {
       const input = document.getElementById(`key-input-${evId}`);
       if (!input || !input.value) {
-        alert("Por favor ingresa la contraseña para desbloquear el examen.");
+        alert("Por favor ingresa la contraseña para desbloquear la evaluación.");
         return;
       }
 
       if (input.value === correctKey) {
         alert("¡Contraseña Correcta! Accediendo a la prueba interactiva...");
       } else {
-        alert("Contraseña incorrecta. Consulta a tu docente asignado.");
+        alert("Contraseña incorrecta. Revisa la clave asignada por tu docente.");
       }
     }
 
@@ -229,41 +303,33 @@
     function renderDocenteView() {
       const cursosTableRows = db.cursos.map(c => `
         <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
-          <td class="py-3.5 px-4 font-bold text-slate-900">${c.nombre}</td>
-          <td class="py-3.5 px-4 text-slate-600">${c.nivel}</td>
-          <td class="py-3.5 px-4 font-semibold text-indigo-600">${c.asignatura}</td>
-          <td class="py-3.5 px-4">
-            <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1">
+          <td class="py-3 px-4 font-bold text-slate-900">${c.nombre}</td>
+          <td class="py-3 px-4 text-slate-600">${c.nivel}</td>
+          <td class="py-3 px-4 font-semibold text-indigo-600">${c.asignatura}</td>
+          <td class="py-3 px-4">
+            <span class="font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
               <i data-lucide="lock" class="w-3 h-3"></i> ${c.clave}
             </span>
           </td>
-          <td class="py-3.5 px-4">
-            <button onclick="changeKey('${c.id}')" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-3 py-1.5 rounded-lg transition-colors">
-              Cambiar Clave
+          <td class="py-3 px-4 flex items-center gap-2">
+            <button onclick="openCourse('${c.id}')" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-semibold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+              <i data-lucide="edit-3" class="w-3 h-3"></i> Tareas/Pruebas
+            </button>
+            <button onclick="changeKey('${c.id}')" class="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-2.5 py-1.5 rounded-lg transition-colors">
+              Clave
+            </button>
+            <button onclick="deleteCourse('${c.id}')" class="text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-semibold px-2 py-1.5 rounded-lg transition-colors title="Eliminar Curso"">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
             </button>
           </td>
         </tr>
       `).join('');
 
-      const notasRows = db.notas.map(n => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
-          <td class="py-3.5 px-4 font-bold text-slate-900">${n.estudiante}</td>
-          <td class="py-3.5 px-4 text-slate-600">${n.curso}</td>
-          <td class="py-3.5 px-4 text-xs text-slate-500">${n.nivel}</td>
-          <td class="py-3.5 px-4 text-slate-700">${n.evaluacion}</td>
-          <td class="py-3.5 px-4">
-            <span class="font-bold px-2.5 py-1 rounded-md text-xs ${n.nota >= 7 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-              ${n.nota.toFixed(2)} / 10.00
-            </span>
-          </td>
-        </tr>
-      `).join('');
-
       document.getElementById('main-content').innerHTML = `
-        <div class="mb-8 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div class="mb-6 border-b border-slate-200 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Panel de Control del Docente</h1>
-            <p class="text-slate-500 text-sm">Agrega nuevos cursos, gestiona claves de exámenes y supervisa las notas.</p>
+            <p class="text-slate-500 text-sm">Administra la oferta académica, asigna tareas/pruebas y controla claves de acceso.</p>
           </div>
           <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-start">
             <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
@@ -271,80 +337,55 @@
         </div>
 
         <!-- Módulo: Agregar Nuevo Curso -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-          <h2 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i> Registrar Nuevo Curso / Asignatura
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-8">
+          <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i> Registrar Nuevo Curso / Asignatura
           </h2>
-          <form onsubmit="addNewCourse(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <form onsubmit="addNewCourse(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nombre del Curso</label>
-              <input type="text" id="new-course-name" placeholder="Ej: Álgebra Lineal" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-name" placeholder="Ej: Robótica Educativa" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Asignatura</label>
-              <input type="text" id="new-course-subject" placeholder="Ej: Matemática" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-subject" placeholder="Ej: Robótica" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nivel / Paralelo</label>
-              <input type="text" id="new-course-level" placeholder="Ej: 1º BGU - Paralelo C" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-level" placeholder="Ej: 5º EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Clave de Examen</label>
-              <input type="text" id="new-course-key" placeholder="Ej: ALG2026" required class="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="new-course-key" placeholder="Ej: ROB5EGB" required class="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 focus:bg-white outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div class="flex items-end">
-              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
                 <i data-lucide="save" class="w-4 h-4"></i> Guardar Curso
               </button>
             </div>
           </form>
         </div>
 
-        <!-- Tabla 1: Gestión de Claves de los Exámenes -->
+        <!-- Tabla: Gestor de Cursos -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-          <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <h2 class="font-bold text-slate-800 flex items-center gap-2">
-              <i data-lucide="key-round" class="w-5 h-5 text-indigo-600"></i> Asignación de Contraseñas por Curso
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i> Catálogo Completo de Cursos (${db.cursos.length})
             </h2>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
+            <table class="w-full text-left border-collapse text-xs">
               <thead>
-                <tr class="bg-slate-100/70 text-slate-600 uppercase text-xs font-bold">
+                <tr class="bg-slate-100/70 text-slate-600 uppercase text-[11px] font-bold">
                   <th class="py-3 px-4">Curso</th>
-                  <th class="py-3 px-4">Nivel / Paralelo</th>
+                  <th class="py-3 px-4">Nivel / Subnivel</th>
                   <th class="py-3 px-4">Asignatura</th>
-                  <th class="py-3 px-4">Contraseña Activa</th>
-                  <th class="py-3 px-4">Acciones</th>
+                  <th class="py-3 px-4">Contraseña</th>
+                  <th class="py-3 px-4">Acciones y Gestión</th>
                 </tr>
               </thead>
               <tbody>
                 ${cursosTableRows}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tabla 2: Libro de Calificaciones -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <h2 class="font-bold text-slate-800 flex items-center gap-2">
-              <i data-lucide="clipboard-list" class="w-5 h-5 text-indigo-600"></i> Libro de Calificaciones General
-            </h2>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr class="bg-slate-100/70 text-slate-600 uppercase text-xs font-bold">
-                  <th class="py-3 px-4">Estudiante</th>
-                  <th class="py-3 px-4">Curso</th>
-                  <th class="py-3 px-4">Nivel</th>
-                  <th class="py-3 px-4">Actividad / Prueba</th>
-                  <th class="py-3 px-4">Calificación</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${notasRows}
               </tbody>
             </table>
           </div>
@@ -355,43 +396,50 @@
     // Agregar nuevo curso a la base de datos
     function addNewCourse(event) {
       event.preventDefault();
-      
       const name = document.getElementById('new-course-name').value.trim();
       const subject = document.getElementById('new-course-subject').value.trim();
       const level = document.getElementById('new-course-level').value.trim();
       const key = document.getElementById('new-course-key').value.trim();
 
-      const newId = 'c_' + Date.now();
-
       db.cursos.push({
-        id: newId,
+        id: 'c_' + Date.now(),
         nombre: name,
         asignatura: subject,
         nivel: level,
         clave: key,
-        actividades: 1
+        actividades: 0
       });
 
-      alert(`¡El curso "${name}" ha sido agregado con éxito! Ya está disponible en el catálogo estudiantil.`);
-      
+      alert(`¡El curso "${name}" ha sido publicado exitosamente!`);
       renderDocenteView();
       lucide.createIcons();
     }
 
-    // Cambiar la clave de un curso como docente
-    function changeKey(cursoId) {
+    // Eliminar un curso
+    function deleteCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
-      const newKey = prompt(`Asigna una nueva contraseña de examen para "${curso.nombre}" (${curso.nivel}):`, curso.clave);
-      
-      if (newKey && newKey.trim() !== '') {
-        curso.clave = newKey.trim();
-        alert(`¡Contraseña de ${curso.nombre} actualizada con éxito a: ${curso.clave}`);
+      if (confirm(`¿Estás seguro de que deseas eliminar el curso "${curso.nombre}" (${curso.nivel})?`)) {
+        db.cursos = db.cursos.filter(c => c.id !== cursoId);
+        db.actividades = db.actividades.filter(a => a.cursoId !== cursoId);
+        alert("Curso eliminado correctamente.");
         renderDocenteView();
         lucide.createIcons();
       }
     }
 
-    // Inicializar al cargar
+    // Cambiar clave
+    function changeKey(cursoId) {
+      const curso = db.cursos.find(c => c.id === cursoId);
+      const newKey = prompt(`Nueva clave para "${curso.nombre}":`, curso.clave);
+      if (newKey && newKey.trim() !== '') {
+        curso.clave = newKey.trim();
+        alert(`Clave actualizada a: ${curso.clave}`);
+        renderDocenteView();
+        lucide.createIcons();
+      }
+    }
+
+    // Inicialización
     window.onload = () => {
       renderEstudianteView();
       lucide.createIcons();
