@@ -51,7 +51,7 @@
     let currentRole = 'estudiante'; 
     const ADMIN_PASSWORD = "Luis0316"; 
     
-    // Cursos predeterminados con sus claves de matriculación obligatorias
+    // Cursos predeterminados
     const defaultCursos = [
       { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026' },
       { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026' },
@@ -69,17 +69,18 @@
       { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU' }
     ];
 
+    // Actividades con propiedad 'fechaLimite' (YYYY-MM-DDTHH:mm)
     const defaultActividades = [
-      { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30 },
-      { id: 'act2', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Deber 1: Diagrama de Conexiones ESP32', detalle: 'Subir esquemático en formato PDF con la guía de puertos asignada.', tiempo: 0 },
-      { id: 'act3', cursoId: 'rob_5egb', tipo: 'Tarea', titulo: 'Deber 1: Diseño de Mecanismo de Transmisión', detalle: 'Adjuntar ficha de trabajo en PDF.', tiempo: 0 }
+      { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30, fechaLimite: '2026-10-15T23:59' },
+      { id: 'act2', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Deber 1: Diagrama de Conexiones ESP32', detalle: 'Subir esquemático en formato PDF con la guía de puertos asignada.', tiempo: 0, fechaLimite: '2026-10-30T18:00' },
+      { id: 'act3', cursoId: 'rob_5egb', tipo: 'Tarea', titulo: 'Deber 1: Diseño de Mecanismo de Transmisión', detalle: 'Adjuntar ficha de trabajo en PDF.', tiempo: 0, fechaLimite: '2026-09-20T12:00' } // Ejemplo de vencida
     ];
 
     const defaultEntregas = [
       { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', fecha: '2026-09-25 14:30', nota: 10.00 },
       { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', fecha: '2026-09-25 10:15', nota: 9.50 },
       { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', fecha: '2026-09-26 08:20', nota: 8.50 },
-      { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-26 11:00', nota: 9.00 }
+      { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-20 10:00', nota: 9.00 }
     ];
 
     // Cargar datos de localStorage
@@ -127,27 +128,21 @@
       lucide.createIcons();
     }
 
-    // ----------------------------------------------------
-    // ACCESO RESTRINGIDO POR CONTRASEÑA
-    // ----------------------------------------------------
     function accessCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       
-      // Si el docente está activo, ingresa directamente sin validar contraseña
       if (currentRole === 'docente') {
         openCourse(cursoId);
         return;
       }
 
-      // Validación para Estudiantes
-      const userKey = prompt(`🔒 CURSO CON ACCESO RESTRINGIDO\n\nAsignatura: ${curso.nombre} (${curso.nivel})\n\nPor favor, ingresa la clave del curso proporcionada por tu docente:`);
-
-      if (userKey === null) return; // Canceló el prompt
+      const userKey = prompt(`🔒 CURSO CON ACCESO RESTRINGIDO\n\nAsignatura: ${curso.nombre} (${curso.nivel})\n\nIngresa la clave del curso proporcionada por tu docente:`);
+      if (userKey === null) return;
 
       if (userKey.trim() === curso.clave) {
         openCourse(cursoId);
       } else {
-        alert("❌ Clave incorrecta. No tienes permiso para acceder a este curso o enviar deberes en él.");
+        alert("❌ Clave incorrecta. Acceso denegado.");
       }
     }
 
@@ -165,7 +160,7 @@
                 <span class="text-xs font-semibold text-slate-400">${c.nivel}</span>
               </div>
               <h3 class="text-base font-bold text-slate-900 mt-1">${c.nombre}</h3>
-              <p class="text-slate-500 text-xs mt-1.5">Requiere clave de matriculación para ingresar y subir archivos.</p>
+              <p class="text-slate-500 text-xs mt-1.5">Requiere clave de matriculación para ingresar y subir tareas.</p>
             </div>
             
             <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -184,7 +179,7 @@
         <div class="mb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">Catálogo de Cursos y Asignaturas</h1>
-            <p class="text-slate-500 text-sm">Selecciona tu materia e ingresa tu clave para enviar tus deberes en formato PDF.</p>
+            <p class="text-slate-500 text-sm">Selecciona tu materia e ingresa tu clave para enviar tus tareas en formato PDF.</p>
           </div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 self-start">
             <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i> Acceso Seguro Activo
@@ -198,14 +193,23 @@
     }
 
     // ----------------------------------------------------
-    // DENTRO DEL CURSO DESBLOQUEADO
+    // DENTRO DEL CURSO CON CONTROL DE TIEMPO
     // ----------------------------------------------------
     function openCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const acts = db.actividades.filter(a => a.cursoId === cursoId);
+      const now = new Date();
 
       const actsHTML = acts.length > 0 ? acts.map(a => {
         const entregasActividad = db.entregas.filter(e => e.actividadId === a.id);
+        
+        // Formatear Fecha Límite
+        let fechaLimiteObj = a.fechaLimite ? new Date(a.fechaLimite) : null;
+        let estaVencida = fechaLimiteObj ? (now > fechaLimiteObj) : false;
+
+        let fechaTexto = fechaLimiteObj 
+          ? fechaLimiteObj.toLocaleString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : 'Sin fecha límite';
 
         return `
           <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-5 flex flex-col gap-4">
@@ -220,39 +224,62 @@
                 <h4 class="font-bold text-indigo-950 text-base">${a.titulo}</h4>
                 <p class="text-xs text-slate-600 mt-0.5">${a.detalle}</p>
               </div>
+
+              <!-- Indicador del Plazo / Tiempo -->
+              <div class="text-right">
+                <span class="text-[11px] font-bold block text-slate-500">Fecha y Hora Límite:</span>
+                <span class="text-xs font-semibold ${estaVencida ? 'text-rose-600 font-bold' : 'text-slate-700'} flex items-center gap-1 justify-end">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${fechaTexto}
+                </span>
+              </div>
             </div>
 
             ${a.tipo === 'Tarea' ? `
-              <!-- Formulario de Subida PDF -->
+              <!-- Módulo de Entrega con Control de Vencimiento -->
               <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
                   <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
                     <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-600"></i> Entrega de Tarea (Formato PDF)
                   </span>
-                  <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">Curso Verificado</span>
+                  ${estaVencida ? `
+                    <span class="text-[10px] bg-rose-100 text-rose-800 border border-rose-300 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                      <i data-lucide="alert-circle" class="w-3 h-3"></i> PLAZO VENCIDO - RECEPCIÓN CERRADA
+                    </span>
+                  ` : `
+                    <span class="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                      <i data-lucide="check-circle" class="w-3 h-3"></i> Recepción Abierta
+                    </span>
+                  `}
                 </div>
 
-                <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}')" class="space-y-3">
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos y Nombres del Estudiante:</label>
-                    <input type="text" id="student-name-${a.id}" placeholder="Ej: Pérez Juan" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                ${estaVencida ? `
+                  <div class="bg-rose-50 border border-rose-200 text-rose-800 text-xs p-3 rounded-lg flex items-center gap-2">
+                    <i data-lucide="lock" class="w-5 h-5 text-rose-600 shrink-0"></i>
+                    <span>El plazo para entregar esta tarea ha finalizado. No se permiten más entregas.</span>
                   </div>
+                ` : `
+                  <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}', '${a.fechaLimite}')" class="space-y-3">
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos y Nombres del Estudiante:</label>
+                      <input type="text" id="student-name-${a.id}" placeholder="Ej: Pérez Juan" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                    </div>
 
-                  <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Seleccionar Documento PDF:</label>
-                    <div class="relative border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/30 rounded-lg p-3 text-center transition-colors">
-                      <input type="file" id="student-file-${a.id}" accept=".pdf" required onchange="handleFileSelect('${a.id}')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                      <div class="flex flex-col items-center justify-center gap-1">
-                        <i data-lucide="file-up" class="w-6 h-6 text-indigo-500"></i>
-                        <span id="file-label-${a.id}" class="text-xs font-medium text-slate-600">Haz clic aquí para adjuntar tu archivo PDF</span>
+                    <div>
+                      <label class="block text-xs font-semibold text-slate-700 mb-1">Seleccionar Documento PDF:</label>
+                      <div class="relative border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/30 rounded-lg p-3 text-center transition-colors">
+                        <input type="file" id="student-file-${a.id}" accept=".pdf" required onchange="handleFileSelect('${a.id}')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <div class="flex flex-col items-center justify-center gap-1">
+                          <i data-lucide="file-up" class="w-6 h-6 text-indigo-500"></i>
+                          <span id="file-label-${a.id}" class="text-xs font-medium text-slate-600">Haz clic aquí para adjuntar tu archivo PDF</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
-                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Subir y Registrar Tarea
-                  </button>
-                </form>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+                      <i data-lucide="check-circle-2" class="w-4 h-4"></i> Subir y Registrar Tarea
+                    </button>
+                  </form>
+                `}
 
                 <!-- Tareas ya enviadas -->
                 ${entregasActividad.length > 0 ? `
@@ -272,8 +299,15 @@
                 ` : ''}
               </div>
             ` : `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600">
-                Esta actividad es una evaluación en línea. Haz clic en rendir para comenzar.
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 flex justify-between items-center">
+                <span>Esta evaluación estará habilitada hasta la fecha y hora indicadas.</span>
+                ${estaVencida ? `
+                  <span class="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">Examen Cerrado</span>
+                ` : `
+                  <button onclick="validateKey('${a.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                    <i data-lucide="key" class="w-3.5 h-3.5"></i> Rendir
+                  </button>
+                `}
               </div>
             `}
           </div>
@@ -283,9 +317,9 @@
       const teacherControls = currentRole === 'docente' ? `
         <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 mb-6">
           <h3 class="font-bold text-amber-900 text-xs mb-3 flex items-center gap-1.5 uppercase tracking-wide">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600"></i> Publicar Nueva Tarea o Prueba en este Curso
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600"></i> Publicar Nueva Tarea o Prueba con Control de Tiempo
           </h3>
-          <form onsubmit="addActivity(event, '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <form onsubmit="addActivity(event, '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Tipo</label>
               <select id="new-act-type" class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
@@ -295,11 +329,15 @@
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Título de la Actividad</label>
-              <input type="text" id="new-act-title" placeholder="Ej: Deber 2: Mecanismos Serie" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
+              <input type="text" id="new-act-title" placeholder="Ej: Deber 2: Mecanismos" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-700 mb-1">Instrucciones</label>
-              <input type="text" id="new-act-detail" placeholder="Ej: Subir reporte en formato PDF" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
+              <input type="text" id="new-act-detail" placeholder="Ej: Subir reporte PDF" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Fecha y Hora Límite de Cierre</label>
+              <input type="datetime-local" id="new-act-deadline" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-1 focus:ring-amber-500">
             </div>
             <div class="flex items-end">
               <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
@@ -351,8 +389,20 @@
       }
     }
 
-    function submitHomework(event, actId, cursoId) {
+    // Validación de fecha estricta al presionar enviar
+    function submitHomework(event, actId, cursoId, fechaLimite) {
       event.preventDefault();
+
+      if (fechaLimite) {
+        const limiteObj = new Date(fechaLimite);
+        const ahora = new Date();
+        if (ahora > limiteObj) {
+          alert("❌ El tiempo para entregar esta tarea ha caducado. Ya no se permite subir archivos.");
+          openCourse(cursoId);
+          return;
+        }
+      }
+
       const studentName = document.getElementById(`student-name-${actId}`).value.trim();
       const fileInput = document.getElementById(`student-file-${actId}`);
 
@@ -383,6 +433,12 @@
       const type = document.getElementById('new-act-type').value;
       const title = document.getElementById('new-act-title').value.trim();
       const detail = document.getElementById('new-act-detail').value.trim();
+      const deadline = document.getElementById('new-act-deadline').value;
+
+      if (!deadline) {
+        alert("Por favor establece una fecha y hora límite de cierre.");
+        return;
+      }
 
       db.actividades.push({
         id: 'act_' + Date.now(),
@@ -390,12 +446,22 @@
         tipo: type,
         titulo: title,
         detalle: detail,
-        tiempo: type === 'Prueba' ? 30 : 0
+        tiempo: type === 'Prueba' ? 30 : 0,
+        fechaLimite: deadline
       });
 
       saveData();
-      alert(`¡${type} publicada en el curso!`);
+      alert(`¡${type} publicada con fecha límite asignada!`);
       openCourse(cursoId);
+    }
+
+    function validateKey(evId, correctKey) {
+      const input = prompt("Ingresa la clave del examen:");
+      if (input === correctKey) {
+        alert("¡Clave correcta! Iniciando examen...");
+      } else {
+        alert("Clave incorrecta.");
+      }
     }
 
     // ----------------------------------------------------
