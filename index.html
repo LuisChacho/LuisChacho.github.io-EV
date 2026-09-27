@@ -51,40 +51,49 @@
     let currentRole = 'estudiante'; 
     const ADMIN_PASSWORD = "Luis0316"; 
     
-    // Base de Datos en Memoria con Entregas Registradas
-    const db = {
-      cursos: [
-        { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026' },
-        { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026' },
-        
-        // Cursos de Robótica
-        { id: 'rob_2egb', nombre: 'Robótica Inicial - Mecanismos Básicos', asignatura: 'Robótica', nivel: '2º EGB', clave: 'ROB2EGB' },
-        { id: 'rob_3egb', nombre: 'Robótica Educativa - Engranajes y Palancas', asignatura: 'Robótica', nivel: '3º EGB', clave: 'ROB3EGB' },
-        { id: 'rob_4egb', nombre: 'Robótica Educativa - Circuitos Básicos', asignatura: 'Robótica', nivel: '4º EGB', clave: 'ROB4EGB' },
-        { id: 'rob_5egb', nombre: 'Robótica y Autómatas I', asignatura: 'Robótica', nivel: '5º EGB', clave: 'ROB5EGB' },
-        { id: 'rob_6egb', nombre: 'Robótica y Sensórica I', asignatura: 'Robótica', nivel: '6º EGB', clave: 'ROB6EGB' },
-        { id: 'rob_7egb', nombre: 'Robótica y Sensórica II', asignatura: 'Robótica', nivel: '7º EGB', clave: 'ROB7EGB' },
-        { id: 'rob_8egb', nombre: 'Programación de Bloques y Algoritmos', asignatura: 'Robótica', nivel: '8º EGB', clave: 'ROB8EGB' },
-        { id: 'rob_9egb', nombre: 'Electrónica y Microcontroladores I', asignatura: 'Robótica', nivel: '9º EGB', clave: 'ROB9EGB' },
-        { id: 'rob_10egb', nombre: 'Electrónica y Microcontroladores II', asignatura: 'Robótica', nivel: '10º EGB', clave: 'ROB10EGB' },
-        { id: 'rob_1bgu', nombre: 'Robótica Aplicada - Micro:bit y Arduino', asignatura: 'Robótica', nivel: '1º BGU', clave: 'ROB1BGU' },
-        { id: 'rob_2bgu', nombre: 'Robótica Avanzada - ESP32 y Domótica', asignatura: 'Robótica', nivel: '2º BGU', clave: 'ROB2BGU' },
-        { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU' }
-      ],
-      actividades: [
-        { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30 },
-        { id: 'act2', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Deber 1: Diagrama de Conexiones ESP32', detalle: 'Subir esquemático en formato PDF con la guía de puertos asignada.', tiempo: 0 },
-        { id: 'act3', cursoId: 'rob_5egb', tipo: 'Tarea', titulo: 'Deber 1: Diseño de Mecanismo de Transmisión', detalle: 'Adjuntar ficha de trabajo en PDF.', tiempo: 0 }
-      ],
-      // Almacenamiento de tareas/PDFs enviados por estudiantes
-      entregas: [
-        { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', fecha: '2026-09-25 14:30', nota: 10.00 },
-        { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', fecha: '2026-09-25 10:15', nota: 9.50 },
-        { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', fecha: '2026-09-26 08:20', nota: 8.50 },
-        { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-26 11:00', nota: 9.00 },
-        { id: 'ent5', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Aguirre Pedro', archivoNombre: 'Trabajo_Mecanismos_Aguirre.pdf', fecha: '2026-09-26 09:45', nota: 10.00 }
-      ]
+    // Cursos predeterminados
+    const defaultCursos = [
+      { id: 'mat3', nombre: 'Matemática Superior', asignatura: 'Matemática', nivel: '3º BGU - Paralelo A', clave: 'MAT2026' },
+      { id: 'fis2', nombre: 'Física General', asignatura: 'Física', nivel: '2º BGU - Paralelo B', clave: 'FIS2026' },
+      { id: 'rob_2egb', nombre: 'Robótica Inicial - Mecanismos Básicos', asignatura: 'Robótica', nivel: '2º EGB', clave: 'ROB2EGB' },
+      { id: 'rob_3egb', nombre: 'Robótica Educativa - Engranajes y Palancas', asignatura: 'Robótica', nivel: '3º EGB', clave: 'ROB3EGB' },
+      { id: 'rob_4egb', nombre: 'Robótica Educativa - Circuitos Básicos', asignatura: 'Robótica', nivel: '4º EGB', clave: 'ROB4EGB' },
+      { id: 'rob_5egb', nombre: 'Robótica y Autómatas I', asignatura: 'Robótica', nivel: '5º EGB', clave: 'ROB5EGB' },
+      { id: 'rob_6egb', nombre: 'Robótica y Sensórica I', asignatura: 'Robótica', nivel: '6º EGB', clave: 'ROB6EGB' },
+      { id: 'rob_7egb', nombre: 'Robótica y Sensórica II', asignatura: 'Robótica', nivel: '7º EGB', clave: 'ROB7EGB' },
+      { id: 'rob_8egb', nombre: 'Programación de Bloques y Algoritmos', asignatura: 'Robótica', nivel: '8º EGB', clave: 'ROB8EGB' },
+      { id: 'rob_9egb', nombre: 'Electrónica y Microcontroladores I', asignatura: 'Robótica', nivel: '9º EGB', clave: 'ROB9EGB' },
+      { id: 'rob_10egb', nombre: 'Electrónica y Microcontroladores II', asignatura: 'Robótica', nivel: '10º EGB', clave: 'ROB10EGB' },
+      { id: 'rob_1bgu', nombre: 'Robótica Aplicada - Micro:bit y Arduino', asignatura: 'Robótica', nivel: '1º BGU', clave: 'ROB1BGU' },
+      { id: 'rob_2bgu', nombre: 'Robótica Avanzada - ESP32 y Domótica', asignatura: 'Robótica', nivel: '2º BGU', clave: 'ROB2BGU' },
+      { id: 'rob_3bgu', nombre: 'Mecatrónica y Proyectos de Automatización', asignatura: 'Robótica', nivel: '3º BGU', clave: 'ROB3BGU' }
+    ];
+
+    const defaultActividades = [
+      { id: 'act1', cursoId: 'mat3', tipo: 'Prueba', titulo: 'Evaluación: Límites e Indeterminaciones', detalle: '10 Preguntas de opción múltiple', tiempo: 30 },
+      { id: 'act2', cursoId: 'rob_2bgu', tipo: 'Tarea', titulo: 'Deber 1: Diagrama de Conexiones ESP32', detalle: 'Subir esquemático en formato PDF con la guía de puertos asignada.', tiempo: 0 },
+      { id: 'act3', cursoId: 'rob_5egb', tipo: 'Tarea', titulo: 'Deber 1: Diseño de Mecanismo de Transmisión', detalle: 'Adjuntar ficha de trabajo en PDF.', tiempo: 0 }
+    ];
+
+    const defaultEntregas = [
+      { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', fecha: '2026-09-25 14:30', nota: 10.00 },
+      { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', fecha: '2026-09-25 10:15', nota: 9.50 },
+      { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', fecha: '2026-09-26 08:20', nota: 8.50 },
+      { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-26 11:00', nota: 9.00 }
+    ];
+
+    // Cargar datos de localStorage o inicializar predeterminados
+    let db = {
+      cursos: JSON.parse(localStorage.getItem('eva_cursos')) || defaultCursos,
+      actividades: JSON.parse(localStorage.getItem('eva_actividades')) || defaultActividades,
+      entregas: JSON.parse(localStorage.getItem('eva_entregas')) || defaultEntregas
     };
+
+    function saveData() {
+      localStorage.setItem('eva_cursos', JSON.stringify(db.cursos));
+      localStorage.setItem('eva_actividades', JSON.stringify(db.actividades));
+      localStorage.setItem('eva_entregas', JSON.stringify(db.entregas));
+    }
 
     function switchRole(role) {
       if (role === 'docente') {
@@ -165,57 +174,91 @@
     }
 
     // ----------------------------------------------------
-    // DENTRO DEL CURSO
+    // DENTRO DEL CURSO Y SUBIDA DE PDF
     // ----------------------------------------------------
     function openCourse(cursoId) {
       const curso = db.cursos.find(c => c.id === cursoId);
       const acts = db.actividades.filter(a => a.cursoId === cursoId);
 
-      const actsHTML = acts.length > 0 ? acts.map(a => `
-        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 flex flex-col gap-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100/60 pb-3">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold px-2 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
-                  ${a.tipo}
-                </span>
-                ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
-              </div>
-              <h4 class="font-bold text-indigo-950 text-base">${a.titulo}</h4>
-              <p class="text-xs text-slate-600 mt-0.5">${a.detalle}</p>
-            </div>
-          </div>
+      const actsHTML = acts.length > 0 ? acts.map(a => {
+        // Verificar si ya existe una entrega realizada en esta actividad
+        const entregasActividad = db.entregas.filter(e => e.actividadId === a.id);
 
-          ${a.tipo === 'Tarea' ? `
-            <!-- Formulario de Entrega PDF para Estudiantes -->
-            <div class="bg-white p-3 rounded-lg border border-indigo-100 mt-1">
-              <span class="text-xs font-bold text-indigo-900 block mb-2 flex items-center gap-1">
-                <i data-lucide="upload" class="w-3.5 h-3.5 text-indigo-600"></i> Formulario de Entrega de Tarea (PDF)
-              </span>
-              <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}')" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div>
-                  <input type="text" id="student-name-${a.id}" placeholder="Apellidos y Nombres" required class="w-full px-2.5 py-1.5 border rounded-lg text-xs bg-slate-50 outline-none focus:ring-1 focus:ring-indigo-500">
+        return `
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-5 flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100/80 pb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-bold px-2.5 py-0.5 rounded ${a.tipo === 'Prueba' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
+                    ${a.tipo}
+                  </span>
+                  ${a.tiempo > 0 ? `<span class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${a.tiempo} min</span>` : ''}
                 </div>
-                <div>
-                  <input type="file" id="student-file-${a.id}" accept=".pdf" required class="w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                <h4 class="font-bold text-indigo-950 text-base">${a.titulo}</h4>
+                <p class="text-xs text-slate-600 mt-0.5">${a.detalle}</p>
+              </div>
+            </div>
+
+            ${a.tipo === 'Tarea' ? `
+              <!-- Formulario de Entrega PDF Mejorado -->
+              <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-600"></i> Entrega de Tarea (Formato PDF)
+                  </span>
+                  <span class="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded">PDF Máx 10MB</span>
                 </div>
-                <div>
-                  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-1.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm">
-                    <i data-lucide="file-check" class="w-3.5 h-3.5"></i> Subir Tarea PDF
+
+                <form onsubmit="submitHomework(event, '${a.id}', '${curso.id}')" class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Apellidos y Nombres del Estudiante:</label>
+                    <input type="text" id="student-name-${a.id}" placeholder="Ej: Pérez Juan" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Seleccionar Documento PDF:</label>
+                    <div class="relative border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/30 rounded-lg p-3 text-center transition-colors">
+                      <input type="file" id="student-file-${a.id}" accept=".pdf" required onchange="handleFileSelect('${a.id}')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                      <div class="flex flex-col items-center justify-center gap-1">
+                        <i data-lucide="file-up" class="w-6 h-6 text-indigo-500"></i>
+                        <span id="file-label-${a.id}" class="text-xs font-medium text-slate-600">Haz clic aquí para adjuntar tu archivo PDF</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> Subir y Registrar Tarea
                   </button>
-                </div>
-              </form>
-            </div>
-          ` : `
-            <div class="flex items-center gap-2">
-              <input type="password" id="key-input-${a.id}" placeholder="Clave..." class="px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-indigo-500 w-32">
-              <button onclick="validateKey('${a.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                <i data-lucide="key" class="w-3.5 h-3.5"></i> Rendir
-              </button>
-            </div>
-          `}
-        </div>
-      `).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o evaluaciones asignadas en este momento.</p>';
+                </form>
+
+                <!-- Historial / Lista de Entregas Registradas en la Actividad -->
+                ${entregasActividad.length > 0 ? `
+                  <div class="mt-4 pt-3 border-t border-slate-100">
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">Entregas enviadas recientemente:</span>
+                    <div class="space-y-1.5">
+                      ${entregasActividad.map(e => `
+                        <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
+                          <span class="font-medium text-slate-800">${e.estudiante}</span>
+                          <span class="text-rose-700 font-semibold flex items-center gap-1">
+                            <i data-lucide="file-text" class="w-3 h-3"></i> ${e.archivoNombre}
+                          </span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : `
+              <div class="flex items-center gap-2">
+                <input type="password" id="key-input-${a.id}" placeholder="Clave..." class="px-3 py-1.5 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-indigo-500 w-32">
+                <button onclick="validateKey('${a.id}', '${curso.clave}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <i data-lucide="key" class="w-3.5 h-3.5"></i> Rendir
+                </button>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('') : '<p class="text-slate-500 text-xs italic">No hay tareas o evaluaciones asignadas en este momento.</p>';
 
       const teacherControls = currentRole === 'docente' ? `
         <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 mb-6">
@@ -279,7 +322,17 @@
       lucide.createIcons();
     }
 
-    // Guardar Entrega del Estudiante
+    // Nombre de archivo en tiempo real
+    function handleFileSelect(actId) {
+      const fileInput = document.getElementById(`student-file-${actId}`);
+      const label = document.getElementById(`file-label-${actId}`);
+      if (fileInput.files && fileInput.files[0]) {
+        label.innerText = "📄 PDF Seleccionado: " + fileInput.files[0].name;
+        label.classList.add("text-indigo-700", "font-bold");
+      }
+    }
+
+    // Guardar Entrega del Estudiante con persistencia
     function submitHomework(event, actId, cursoId) {
       event.preventDefault();
       const studentName = document.getElementById(`student-name-${actId}`).value.trim();
@@ -290,19 +343,23 @@
         return;
       }
 
-      const fileName = fileInput.files[0].name;
-
-      db.entregas.push({
+      const file = fileInput.files[0];
+      
+      // Registrar nueva entrega en base de datos local
+      const nuevaEntrega = {
         id: 'ent_' + Date.now(),
         actividadId: actId,
         cursoId: cursoId,
         estudiante: studentName,
-        archivoNombre: fileName,
+        archivoNombre: file.name,
         fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
         nota: 0.00
-      });
+      };
 
-      alert(`¡Tarea enviada con éxito por ${studentName}! Tu docente la revisará en la sección clasificatoria de entregas PDF.`);
+      db.entregas.push(nuevaEntrega);
+      saveData();
+
+      alert(`¡Éxito! Tarea subida por "${studentName}". Se ha registrado correctamente en la plataforma del docente.`);
       openCourse(cursoId);
     }
 
@@ -321,6 +378,7 @@
         tiempo: type === 'Prueba' ? 30 : 0
       });
 
+      saveData();
       alert(`¡${type} publicada en el curso!`);
       openCourse(cursoId);
     }
@@ -363,15 +421,14 @@
         </tr>
       `).join('');
 
-      // 2. Clasificación de Entregas PDF por Curso, Año y Orden Alfabético
+      // 2. Clasificación de Entregas PDF por Curso, Año y Orden Alfabético (A-Z)
       let entregasClasificadasHTML = '';
 
       db.cursos.forEach(curso => {
-        // Filtrar entregas pertenecientes a este curso
         let entregasCurso = db.entregas.filter(e => e.cursoId === curso.id);
 
         if (entregasCurso.length > 0) {
-          // ORDEN ALFABÉTICO por apellido/nombre del estudiante
+          // ORDEN ALFABÉTICO por estudiante
           entregasCurso.sort((a, b) => a.estudiante.localeCompare(b.estudiante));
 
           const filasEntregas = entregasCurso.map(e => {
@@ -525,6 +582,7 @@
       const val = prompt(`Ingresa la nota sobre 10 para ${entrega.estudiante}:`, entrega.nota || 10);
       if (val !== null && !isNaN(val)) {
         entrega.nota = parseFloat(val);
+        saveData();
         alert(`Nota de ${entrega.estudiante} guardada: ${entrega.nota.toFixed(2)}/10`);
         renderDocenteView();
         lucide.createIcons();
@@ -546,6 +604,7 @@
         clave: key
       });
 
+      saveData();
       alert(`Curso "${name}" publicado exitosamente.`);
       renderDocenteView();
       lucide.createIcons();
@@ -557,6 +616,7 @@
         db.cursos = db.cursos.filter(c => c.id !== cursoId);
         db.actividades = db.actividades.filter(a => a.cursoId !== cursoId);
         db.entregas = db.entregas.filter(e => e.cursoId !== cursoId);
+        saveData();
         renderDocenteView();
         lucide.createIcons();
       }
@@ -567,6 +627,7 @@
       const newKey = prompt(`Nueva clave para "${curso.nombre}":`, curso.clave);
       if (newKey && newKey.trim() !== '') {
         curso.clave = newKey.trim();
+        saveData();
         renderDocenteView();
         lucide.createIcons();
       }
