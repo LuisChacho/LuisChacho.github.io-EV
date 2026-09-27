@@ -47,9 +47,38 @@
     <!-- Carga dinámica -->
   </main>
 
+  <!-- Modal para Visor de PDF -->
+  <div id="pdf-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex-col justify-center items-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-300">
+      <div class="bg-indigo-900 text-white px-5 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-text" class="w-5 h-5 text-indigo-300"></i>
+          <div>
+            <h3 id="pdf-modal-title" class="font-bold text-sm leading-none">Vista Previa del Documento PDF</h3>
+            <span id="pdf-modal-subtitle" class="text-xs text-indigo-200">Revisión de Tarea del Estudiante</span>
+          </div>
+        </div>
+        <button onclick="closePdfModal()" class="text-indigo-200 hover:text-white hover:bg-indigo-800 p-1.5 rounded-lg transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex-1 bg-slate-200 p-2 relative flex flex-col justify-center items-center">
+        <iframe id="pdf-frame" class="w-full h-full rounded-lg border border-slate-300 shadow-inner bg-white" src="about:blank"></iframe>
+      </div>
+      <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-between items-center text-xs">
+        <span class="text-slate-500 font-medium flex items-center gap-1">
+          <i data-lucide="info" class="w-4 h-4 text-indigo-600"></i> Si el navegador no despliega la vista previa integrada, se habilitará la opción de descarga.
+        </span>
+        <button onclick="closePdfModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 rounded-lg transition-colors">
+          Cerrar Visor
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentRole = 'estudiante'; 
-    const ADMIN_PASSWORD = "Luis0316"; 
+    let adminPassword = localStorage.getItem('eva_admin_password') || "Luis0316"; 
     
     // Cursos predeterminados
     const defaultCursos = [
@@ -76,10 +105,10 @@
     ];
 
     const defaultEntregas = [
-      { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', fecha: '2026-09-25 14:30', nota: 10.00 },
-      { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', fecha: '2026-09-25 10:15', nota: 9.50 },
-      { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', fecha: '2026-09-26 08:20', nota: 8.50 },
-      { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', fecha: '2026-09-26 11:00', nota: 9.00 }
+      { id: 'ent1', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Benítez Carlos', archivoNombre: 'Deber_ESP32_Benitez.pdf', archivoData: '', fecha: '2026-09-25 14:30', nota: 10.00 },
+      { id: 'ent2', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Alvarado Ana', archivoNombre: 'Tarea1_Alvarado.pdf', archivoData: '', fecha: '2026-09-25 10:15', nota: 9.50 },
+      { id: 'ent3', actividadId: 'act2', cursoId: 'rob_2bgu', estudiante: 'Zambrano David', archivoNombre: 'Esquema_ESP32_DZ.pdf', archivoData: '', fecha: '2026-09-26 08:20', nota: 8.50 },
+      { id: 'ent4', actividadId: 'act3', cursoId: 'rob_5egb', estudiante: 'Córdova María', archivoNombre: 'Ficha_Robótica_Cordova.pdf', archivoData: '', fecha: '2026-09-26 11:00', nota: 9.00 }
     ];
 
     // Cargar datos desde localStorage
@@ -99,7 +128,7 @@
       if (role === 'docente') {
         const passInput = prompt("Acceso Restringido para el Docente.\n\nIngresa la contraseña de administrador:");
         if (passInput === null) return;
-        if (passInput !== ADMIN_PASSWORD) {
+        if (passInput !== adminPassword) {
           alert("Contraseña incorrecta. Acceso denegado.");
           return;
         }
@@ -125,6 +154,30 @@
         renderDocenteView();
       }
       lucide.createIcons();
+    }
+
+    function changeAdminPassword() {
+      const actual = prompt("Seguridad Docente:\n\nIngresa la contraseña ACTUAL del docente:");
+      if (actual === null) return;
+      if (actual !== adminPassword) {
+        alert("❌ La contraseña actual ingresada es incorrecta.");
+        return;
+      }
+
+      const nueva = prompt("Ingresa la NUEVA contraseña para la Vista Docente:");
+      if (!nueva || nueva.trim() === "") {
+        alert("La contraseña no puede estar vacía.");
+        return;
+      }
+
+      const confirmacion = prompt("Confirma la NUEVA contraseña:");
+      if (nueva.trim() === confirmacion.trim()) {
+        adminPassword = nueva.trim();
+        localStorage.setItem('eva_admin_password', adminPassword);
+        alert("¡Contraseña del docente actualizada con éxito!");
+      } else {
+        alert("❌ Las contraseñas no coinciden. No se realizaron cambios.");
+      }
     }
 
     function accessCourse(cursoId) {
@@ -271,9 +324,9 @@
                         <div class="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
                           <span class="font-medium text-slate-800">${e.estudiante}</span>
                           <div class="flex items-center gap-2">
-                            <span class="text-rose-700 font-semibold flex items-center gap-1">
+                            <button onclick="previewPDF('${e.id}')" class="text-rose-700 hover:text-rose-900 font-semibold flex items-center gap-1 hover:underline">
                               <i data-lucide="file-text" class="w-3 h-3"></i> ${e.archivoNombre}
-                            </span>
+                            </button>
                             ${currentRole === 'docente' ? `
                               <button onclick="deleteSubmission('${e.id}', '${curso.id}')" class="text-rose-600 hover:text-rose-800 p-1" title="Eliminar Deber">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
@@ -361,7 +414,37 @@
       lucide.createIcons();
     }
 
-    // Funciones para aplazar fecha y eliminar entregas
+    // Funciones para previsualizar PDF, aplazar fecha y eliminar entregas
+    function previewPDF(entregaId) {
+      const entrega = db.entregas.find(e => e.id === entregaId);
+      if (!entrega) return;
+
+      const act = db.actividades.find(a => a.id === entrega.actividadId);
+      
+      document.getElementById('pdf-modal-title').innerText = entrega.archivoNombre;
+      document.getElementById('pdf-modal-subtitle').innerText = `Estudiante: ${entrega.estudiante} | Tarea: ${act ? act.titulo : 'Asignación'}`;
+
+      const iframe = document.getElementById('pdf-frame');
+
+      if (entrega.archivoData && entrega.archivoData.startsWith('data:application/pdf')) {
+        iframe.src = entrega.archivoData;
+      } else {
+        // PDF de demostración generado dinámicamente en Data URL
+        const samplePDFData = "data:application/pdf;base64,JVBERi0xLjQKJSDi48/GCjEgMCBvYmoKPDwvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlIC9QYWdlcyAvQ291bnQgMSAvS2lkcyBbMyAwIFJdPj4KZW5kb2JqCjMgMCBvYmoKPDwvVHlwZSAvUGFnZSAvUGFyZW50IDIgMCBSIC9SZXNvdXJjZXMgPDwvRm9udCA8PC9GMSA0IDAgUj4+Pj4gL01lZGlhQm94IFswIDAgNjEyIDc5Ml0gL0NvbnRlbnRzIDUgMCBSPj4KZW5kb2JqCjQgMCBvYmoKPDwvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2E+PgplbmRvYmoKNSAwIG9iago8PC9MZW5ndGggOTk+PgpzdHJlYW0KQlQKL0YxIDI0IFRmCjcwIDcwMCBUZAooREVCRVIgRU5UUkVHQURPIEVOIEZPUk1BVE8gUERGKSBUagovRjEgMTIgVGYKMCAtNDAgVGQKKEVzdHVkaWFudGU6IC" + btoa(unescape(encodeURIComponent(entrega.estudiante))) + ") " + "VGoKMCAtMjAgVGQKKEFyY2hpdm86IC" + btoa(unescape(encodeURIComponent(entrega.archivoNombre))) + ") " + "VGoKMCAtMjAgVGQKKEZlY2hhOiAi" + btoa(unescape(encodeURIComponent(entrega.fecha))) + ") " + "VGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwDY2Nzc2Y24gCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAyNDIgMDAwMDAgbiAKMDAwMDAwMDI5NCAwMDAwMCBuIAp0cmFpbGVyCjw8L1NpemUgNiAvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0NDMKJSVFT0Y=";
+        iframe.src = samplePDFData;
+      }
+
+      document.getElementById('pdf-modal').classList.remove('hidden');
+      document.getElementById('pdf-modal').classList.add('flex');
+    }
+
+    function closePdfModal() {
+      const modal = document.getElementById('pdf-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.getElementById('pdf-frame').src = 'about:blank';
+    }
+
     function extendDeadline(actId, cursoId) {
       const act = db.actividades.find(a => a.id === actId);
       const nuevaFecha = prompt(`Aplazar / Cambiar Fecha Límite de Entrega\n\nTarea: "${act.titulo}"\nFecha Actual: ${act.fechaLimite || 'Sin fecha'}\n\nIngresa la nueva fecha límite (YYYY-MM-DD):`, act.fechaLimite || '');
@@ -409,20 +492,26 @@
       }
 
       const file = fileInput.files[0];
+      const reader = new FileReader();
 
-      db.entregas.push({
-        id: 'ent_' + Date.now(),
-        actividadId: actId,
-        cursoId: cursoId,
-        estudiante: studentName,
-        archivoNombre: file.name,
-        fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        nota: 0.00
-      });
+      reader.onload = function(e) {
+        db.entregas.push({
+          id: 'ent_' + Date.now(),
+          actividadId: actId,
+          cursoId: cursoId,
+          estudiante: studentName,
+          archivoNombre: file.name,
+          archivoData: e.target.result,
+          fecha: new Date().toISOString().replace('T', ' ').substring(0, 16),
+          nota: 0.00
+        });
 
-      saveData();
-      alert(`¡Éxito! Tarea de "${studentName}" registrada en este curso.`);
-      openCourse(cursoId);
+        saveData();
+        alert(`¡Éxito! Tarea de "${studentName}" registrada en este curso.`);
+        openCourse(cursoId);
+      };
+
+      reader.readAsDataURL(file);
     }
 
     function addActivity(event, cursoId) {
@@ -495,14 +584,14 @@
                 </td>
                 <td class="py-2.5 px-4 text-slate-700 font-medium">${act ? act.titulo : 'Tarea'}</td>
                 <td class="py-2.5 px-4">
-                  <a href="#" onclick="alert('Abriendo vista previa del PDF subido: ${e.archivoNombre}'); return false;" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-100 transition-colors">
-                    <i data-lucide="file-text" class="w-3.5 h-3.5 text-rose-600"></i> ${e.archivoNombre}
-                  </a>
+                  <button onclick="previewPDF('${e.id}')" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md hover:bg-rose-100 transition-colors cursor-pointer" title="Hacer clic para ver el PDF">
+                    <i data-lucide="eye" class="w-3.5 h-3.5 text-rose-600"></i> Ver PDF: ${e.archivoNombre}
+                  </button>
                 </td>
                 <td class="py-2.5 px-4 text-slate-500 text-xs">${e.fecha}</td>
                 <td class="py-2.5 px-4">
-                  <button onclick="gradeAssignment('${e.id}')" class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-md font-bold transition-colors">
-                    ${e.nota > 0 ? e.nota.toFixed(2) + ' / 10' : 'Calificar'}
+                  <button onclick="gradeAssignment('${e.id}')" class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-md font-bold transition-colors flex items-center gap-1">
+                    <i data-lucide="check-square" class="w-3 h-3 text-emerald-600"></i> ${e.nota > 0 ? e.nota.toFixed(2) + ' / 10' : 'Calificar'}
                   </button>
                 </td>
                 <td class="py-2.5 px-4 text-center">
@@ -531,7 +620,7 @@
                     <tr class="bg-slate-100/80 text-slate-600 uppercase text-[10px] font-bold">
                       <th class="py-2.5 px-4">Estudiante (Nombre y Apellido)</th>
                       <th class="py-2.5 px-4">Tarea Asignada</th>
-                      <th class="py-2.5 px-4">Archivo Documento PDF</th>
+                      <th class="py-2.5 px-4">Previsualizar Documento PDF</th>
                       <th class="py-2.5 px-4">Fecha de Envío</th>
                       <th class="py-2.5 px-4">Calificación</th>
                       <th class="py-2.5 px-4 text-center">Acción</th>
@@ -562,9 +651,14 @@
             <h1 class="text-2xl font-bold text-slate-900">Panel Docente Administrador</h1>
             <p class="text-slate-500 text-sm">Gestión de oferta académica y centro de recepción de tareas en formato PDF.</p>
           </div>
-          <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 self-start">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
-          </button>
+          <div class="flex items-center gap-2 self-start">
+            <button onclick="changeAdminPassword()" class="bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-100 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i> Cambiar Clave Administrador
+            </button>
+            <button onclick="switchRole('estudiante')" class="bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Salir de Vista Docente
+            </button>
+          </div>
         </div>
 
         <!-- Módulo de Creación de Cursos -->
